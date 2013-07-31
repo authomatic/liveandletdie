@@ -1,6 +1,7 @@
+import socket
 import sys
-
 import testliveserver
+
 
 def live_server(app):
     """
@@ -14,5 +15,6 @@ def live_server(app):
     if host:
         app.config['DEBUG'] = False
         app.run(host=host, port=port)
-        print('Live server running at {}:{} terminated!'.format(host, port))
+        
+        print('Flask ive server running at {}:{} terminated!'.format(host, port))
         sys.exit()

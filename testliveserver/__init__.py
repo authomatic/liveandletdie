@@ -19,7 +19,7 @@ def _validate_host(host):
 
 def rp(current_file, relative_path):
     """
-    Returns absolute path to the pecified path relative to current file.
+    Returns absolute path to the specified path relative to current file.
     
     :param str module_file:
         The ``__file__`` attribute of the module where

@@ -13,7 +13,7 @@ HOME = 'http://{}/'.format(HOST)
 LIVESERVER_PATH = testliveserver.rp(__file__, '../../sample_apps/flask_sample/main.py')
 
 
-class TestLogin(object):
+class TestHome(object):
     """
     Tests interaction of a user with a website.
     """
@@ -38,7 +38,7 @@ class TestLogin(object):
          
         # Stop the browser.
         if hasattr(self, 'browser'):
-            self.browser.quit()    
+            self.browser.quit()
     
     
     def test_visit_start_page(self):
