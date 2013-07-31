@@ -37,10 +37,12 @@ Add the **Test Live Server** capability to your Flask app by calling the
 	    
 	    app.run()
 
-In your test setup call the ``testliveserver.start(app_main, port_number)``
-function which will run the Flask app with the ``--testliveserver`` flag.
-The function returns the process of the running app
+In your test setup call the ``testliveserver.start(app_main, port_number, timeout=10.0)``
+function which will run the Flask app with the ``--testliveserver`` flag
+and check whether the server started within specified timeout in seconds.
+If the server started successfully, the function returns the process of the running app
 which you can terminate in the teardown.
+If the server didn't start within the timeout it raises an exception.
 
 .. code-block:: python
 	
