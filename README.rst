@@ -11,7 +11,7 @@ Usage
 -----
 
 Add the **Test Live Server** capability to your Flask app by calling the
-:funct:`.live_server` function just before the ``app.run()``.
+``testliveserver.flask.live_server(app)`` function just before the ``app.run()``.
 
 .. code-block:: python
 	
@@ -37,7 +37,9 @@ Add the **Test Live Server** capability to your Flask app by calling the
 	    
 	    app.run()
 
-In your test setup call the :funct:`.start` function which returns the process of the running app
+In your test setup call the ``testliveserver.start(app_main, port_number)``
+function which will run the Flask app with the ``--testliveserver`` flag.
+The function returns the process of the running app
 which you can terminate in the teardown.
 
 .. code-block:: python
