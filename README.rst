@@ -74,7 +74,7 @@ which you can terminate in the teardown.
 	            cls.browser.quit()
 	    
 	    def test_visit_start_page(self):
-	    	self.browser.get('127.0.0.1:8001')
+	    	self.browser.get('HTTP://127.0.0.1:8001')
 	        page_text = self.browser.find_element_by_tag_name('body').text
 	        self.assertIn('Home', page_text)
 
