@@ -5,4 +5,4 @@ __pycache__
 *.pyc
 *.log
 dist/
-Test_Live_Server.egg-info/
+TestLiveServer.egg-info/
