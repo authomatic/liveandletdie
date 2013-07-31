@@ -16,5 +16,5 @@ def live_server(app):
         app.config['DEBUG'] = False
         app.run(host=host, port=port)
         
-        print('Flask ive server running at {}:{} terminated!'.format(host, port))
+        print('Flask live server running at {}:{} terminated!'.format(host, port))
         sys.exit()

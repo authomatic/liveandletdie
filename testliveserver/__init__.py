@@ -17,7 +17,7 @@ def _validate_host(host):
         raise argparse.ArgumentTypeError('{} is not a valid host!'.format(host))
 
 
-def rp(current_file, relative_path):
+def abspath(current_file, relative_path):
     """
     Returns absolute path to the specified path relative to current file.
     

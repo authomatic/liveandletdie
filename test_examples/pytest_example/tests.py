@@ -10,7 +10,7 @@ import testliveserver
 
 HOST = '127.0.0.1:8001'
 HOME = 'http://{}/'.format(HOST)
-LIVESERVER_PATH = testliveserver.rp(__file__, '../../sample_apps/flask_sample/main.py')
+LIVESERVER_PATH = testliveserver.abspath(__file__, '../../sample_apps/flask_sample/main.py')
 
 
 class TestHome(object):
