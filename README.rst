@@ -48,19 +48,15 @@ which you can terminate in the teardown.
 	import unittest
 	from selenium import webdriver
 
-	HOST = '127.0.0.1:8001'
-	HOME = 'http://{}/'.format(HOST)
-	LIVESERVER_PATH = testliveserver.abspath(__file__, '../../sample_apps/flask_sample/main.py')
-
 	class TestWebsite(unittest.TestCase):
 	    
 	    @classmethod
 	    def setUpClass(cls):
+	    	# Start the server
 	        try:
-	            # Run the live server.
-	            cls.process = testliveserver.start(LIVESERVER_PATH, HOST)
+	            cls.process = testliveserver.start('main.py', 8001)
 	        except Exception as e:
-	            # Stop all tests if not started in timeout.
+	            # Skip all tests if not started in timeout.
 	            raise unittest.SkipTest(e.message)
 	        
 	        # Start browser.
@@ -78,7 +74,7 @@ which you can terminate in the teardown.
 	            cls.browser.quit()
 	    
 	    def test_visit_start_page(self):
-	        self.browser.get(HOME)
+	    	self.browser.get('127.0.0.1:8001')
 	        page_text = self.browser.find_element_by_tag_name('body').text
 	        self.assertIn('Home', page_text)
 
