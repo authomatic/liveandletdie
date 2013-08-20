@@ -4,5 +4,9 @@
 __pycache__
 *.pyc
 *.log
+*.zip
+*~
+chromedriver
 dist/
 TestLiveServer.egg-info/
+venv/

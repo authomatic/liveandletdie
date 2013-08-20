@@ -1,0 +1,16 @@
+Flask==0.10.1
+Jinja2==2.7.1
+MarkupSafe==0.18
+Werkzeug==0.9.3
+argparse==1.2.1
+distribute==0.6.34
+fuzzywuzzy==0.2
+ipdb==0.7
+ipython==1.0.0
+itsdangerous==0.23
+lettuce==0.2.18
+py==1.4.15
+pytest==2.3.5
+selenium==2.35.0
+sure==1.2.2
+wsgiref==0.1.2
