@@ -6,6 +6,8 @@ __pycache__
 *.log
 *.zip
 *~
+.idea/
+build/
 chromedriver
 dist/
 TestLiveServer.egg-info/
