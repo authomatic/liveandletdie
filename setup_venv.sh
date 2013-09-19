@@ -1,3 +1,15 @@
+#!/bin/sh
+
+# Fancy colors
+BLACK=$(tput setaf 0)
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+YELLOW=$(tput setaf 3)
+BLUE=$(tput setaf 4)
+MAGENTA=$(tput setaf 5)
+CYAN=$(tput setaf 6)
+NORMAL=$(tput sgr0)
+
 # Create venv
 virtualenv venv
 
@@ -25,6 +37,24 @@ chmod 777 venv/bin/chromedriver
 
 # Install requirements
 pip install --requirement requirements.txt
+
+#########################
+# Google App Engine SDK #
+#########################
+
+echo "${YELLOW}Downloading Google App Engine SDK.${NORMAL}"
+
+wget $QUIET http://googleappengine.googlecode.com/files/google_appengine_1.8.3.zip
+unzip $QUIET google_appengine_1.8.3.zip
+rm google_appengine_1.8.3.zip
+
+echo "${GREEN}Installing Google App Engine SDK to:${NORMAL} venv/bin/google_appengine"
+mv google_appengine venv/bin
+
+PTH=venv/lib/python2.7/site-packages/gae.pth
+echo "${GREEN}Adding pth file:${NORMAL} $PTH"
+echo "$(pwd -LP)/venv/bin/google_appengine/" >> $PTH
+echo "import dev_appserver; dev_appserver.fix_sys_path()" >> $PTH
 
 # Deactivate venv (redundant?)
 deactivate
