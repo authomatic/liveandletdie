@@ -3,47 +3,60 @@
 An example of testing a Flask app with py.test and Selenium with help of testliveserver.
 """
 
+from os import path
+
 from selenium import webdriver
 import pytest
-import testliveserver
+import testliveserver as tls
 
 
-HOST = '127.0.0.1:8001'
-HOME = 'http://{}/'.format(HOST)
-LIVESERVER_PATH = testliveserver.abspath(__file__, '../../sample_apps/flask_sample/main.py')
+def abspath(pth):
+    return path.join(path.dirname(__file__), '../..', pth)
 
 
-class TestHome(object):
-    """
-    Tests interaction of a user with a website.
-    """
+APPS = {
+    'Pyramid': tls.WsgirefSimpleServer(
+        abspath('sample_apps/pyramid/main.py'),
+        port=5000
+    ),
+    'Flask': tls.Flask(
+        abspath('sample_apps/flask/main.py'),
+        port=5000
+    ),
+    'GAE': tls.GAE(
+        abspath('venv/bin/google_appengine/dev_appserver.py'),
+        abspath('sample_apps/gae'),
+        port=8080
+    ),
+}
+
+
+@pytest.fixture('module', APPS)
+def app(request):
+    app = APPS[request.param]
     
-    def setup_class(self):
-        try:
-            # Run the live server.
-            self.process = testliveserver.start(LIVESERVER_PATH, HOST)
-        except Exception as e:
-            # Stop all tests if not started.
-            pytest.exit(format(e.message))
-        
-        # Start the browser.
-        self.browser = webdriver.Chrome()
-        self.browser.implicitly_wait(3)
-                
-        
-    def teardown_class(self):
-        # Stop the live server.
-        if hasattr(self, 'process'):
-            self.process.terminate()
-         
-        # Stop the browser.
-        if hasattr(self, 'browser'):
-            self.browser.quit()
+    try:
+        # Run the live server.
+        app.start(kill=True)
+    except Exception as e:
+        # Skip test if not started.
+        pytest.fail(e.message)
     
+    request.addfinalizer(lambda: app.stop())
+    return app
+
+
+@pytest.fixture('module')
+def browser(request):
+    browser = webdriver.Chrome()
+    browser.implicitly_wait(3)
+    request.addfinalizer(lambda: browser.quit())
+    return browser
+
+
+def test_home(browser, app):
+    """Andy visits a webpage and sees "Home"."""
     
-    def test_visit_start_page(self):
-        """Andy visits a webpage and sees the "Home" text."""
-        
-        self.browser.get(HOME)
-        page_text = self.browser.find_element_by_tag_name('body').text
-        assert 'Home' in page_text
+    browser.get(app.url)
+    page_text = browser.find_element_by_tag_name('body').text
+    assert 'Home' in page_text

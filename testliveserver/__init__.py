@@ -2,6 +2,8 @@ from datetime import datetime
 import argparse
 import os
 import re
+import signal
+import socket
 import subprocess
 import sys
 import urllib2
@@ -15,24 +17,6 @@ def _validate_host(host):
         return host
     else:
         raise argparse.ArgumentTypeError('{} is not a valid host!'.format(host))
-
-
-def abspath(current_file, relative_path):
-    """
-    Returns absolute path to the specified path relative to current file.
-    
-    :param str module_file:
-        The ``__file__`` attribute of the module where
-        this function is being called.
-        
-    :param str relative_path:
-        The relative path.
-    
-    :returns:
-        Absolute path.
-    """
-    
-    return os.path.join(os.path.dirname(current_file), relative_path)
 
 
 def split_host(host):
@@ -75,40 +59,71 @@ def parse_args():
         return (None, None)
 
 
-def check(url, timeout=10.0):
-    """
-    Checks whether a server is running.
+def check(server):
+    """Checks whether a server is running."""
     
-    :param str url:
-        URL of the server.
+    return server.check()
+
+
+def start(server):
+    """Starts a live server in a separate process and checks whether it is running."""
+    
+    return server.start()
+
+
+def port_in_use(port, kill=False):
+    """
+    Checks whether a port is free or not.
+    
+    :param int port:
+        The port number to check for.
         
-    :param float timeout:
-        Timeout in seconds.
+    :param bool kill:
+        If ``True`` the process will be killed.
+    
+    :returns:
+        The process id as :class:`int` if in use, otherwise ``False`` .
     """
     
-    response = None
-    sleeped = 0.0
+    process = subprocess.Popen('lsof -i :{}'.format(port).split(), stdout=subprocess.PIPE)
     
-    t = datetime.now()
+    headers = process.stdout.readline().split()
+    if not 'PID' in headers:
+        return False
     
-    while not response:
+    index = headers.index('PID')
+    
+    row = process.stdout.readline().split()
+    if len(row) < index:
+        return False
+    
+    pid = int(row[index])
+    if pid:
+        print('Port {} is already being used by process {}!'.format(port, pid))
+    
+    if kill:
+        print('Killing process with id {} listening on port {}!'.format(pid, port))
+        os.kill(pid, signal.SIGTERM)
+        
+        # Check whether it was really killed.
         try:
-            response = urllib2.urlopen(url)
-        except urllib2.URLError:
-            if sleeped > timeout:
-                raise Exception('Live server didn\'t start in specified timeout {} seconds!'\
-                                .format(timeout))
-            sleeped = (datetime.now() - t).total_seconds()
-    
-    return (datetime.now() - t).total_seconds()
+            # If still alive
+            os.kill(pid, 0)
+            # call me again
+            return port_in_use(port, kill)
+        except OSError:
+            # If killed
+            return False
+    else:
+        return pid
 
 
-def start(path, host, timeout=10.0):
+class Base(object):
     """
-    Starts a live server in a separate process and checks whether it is running.
+    Base class for all frameworks.
     
     :param str path:
-        Absolute path to a python module.
+        Absolute path to app directory or module (depends on framework).
         
     :param str host:
         A host at which the live server should listen.
@@ -116,24 +131,136 @@ def start(path, host, timeout=10.0):
     :param float timeout:
         Timeout in seconds for the check.
     
-    :returns:
-        A :class:`subprocess.Popen` instance.
+    :url:
+        URL where to check whether the server is running default is "http://{host}".
     """
     
-    host = str(host)
-    if re.match(_VALID_HOST_PATTERN, host):
-        process = subprocess.Popen(['python', path, '--testliveserver', str(host)])
-        duration = check('http://{}'.format(host))
-        print('Live server started in {} seconds.'.format(duration))
-        return process
-    else:
-        raise Exception('{} is not a valid host!'.format(host))
+    def __init__(self, path, host='127.0.0.1', port=8000, timeout=10.0, url=None):
+        
+        self.path = path
+        self.timeout = timeout
+        self.url = url or 'http://{}:{}'.format(host, port)
+        self.host = host
+        self.port = port
+        self.process = None
+    
+    
+    def check(self):
+        """Checks whether a server is running."""
+        
+        response = None
+        sleeped = 0.0
+        
+        t = datetime.now()
+        
+        while not response:
+            try:
+                response = urllib2.urlopen(self.url)
+            except urllib2.URLError:
+                if sleeped > self.timeout:
+                    raise Exception('{} server {} didn\'t start in specified timeout {} seconds!'\
+                                    .format(self.__class__.__name__,
+                                            self.url,
+                                            self.timeout))
+                sleeped = (datetime.now() - t).total_seconds()
+        
+        return (datetime.now() - t).total_seconds()
+    
+    
+    def start(self, kill=False):
+        """Starts a live server in a separate process and checks whether it is running."""
+        
+        pid = port_in_use(self.port, kill)
+        print pid, self.port
+        
+        if pid:
+            raise Exception('Port {} is already being used by process {}!'.format(self.port, pid))
+        
+        host = str(self.host)
+        if re.match(_VALID_HOST_PATTERN, host):
+            self.process = subprocess.Popen(self.create_command())
+            duration = self.check()
+            print('Live server started in {} seconds.'.format(duration))
+            return self.process
+        else:
+            raise Exception('{} is not a valid host!'.format(host))
+    
+    
+    
+    def stop(self):
+        """Stops the server if it is running."""
+        
+        if self.process:
+            self.process.terminate()
 
 
+class WrapperBase(Base):
+    """Base class for frameworks that require their app to be wrapped."""
+    
+    def create_command(self):
+        return [
+            'python',
+            self.path,
+            '--testliveserver',
+            '{}:{}'.format(self.host, self.port),
+        ]
 
 
+class Flask(WrapperBase):
+    
+    @staticmethod
+    def wrap(app):
+        """
+        Adds test live server capability to a Flask app module.
+        
+        :param app:
+            A :class:`flask.Flask` app instance.
+        """
+        
+        host, port = parse_args()
+        if host:
+            app.config['DEBUG'] = False
+            app.run(host=host, port=port)
+            
+            print('Flask live server running at {}:{} terminated!'.format(host, port))
+            sys.exit()
+    
 
+class GAE(Base):
+    """
+    
+    The first argument must be the path to dev_appserver.py.
+    """
+    
+    def __init__(self, dev_appserver_path, *args, **kwargs):
+        
+        super(GAE, self).__init__(*args, **kwargs)
+        self.dev_appserver_path = dev_appserver_path
+    
+    def create_command(self):
+        return [
+            'python',
+            self.dev_appserver_path,
+            '--host={}'.format(self.host),
+            '--port={}'.format(self.port),
+            self.path
+        ]
+    
 
-
+class WsgirefSimpleServer(WrapperBase):
+    
+    @staticmethod
+    def wrap(app):
+        host, port = parse_args()
+        print '\nWsgirefSimpleServer {}:{}'.format(host, port)
+        if host:            
+            from wsgiref.simple_server import make_server
+            
+            s = make_server(host, port, app)
+            s.serve_forever()
+            s.server_close()
+            
+            print('wsgiref.simple_server running at {}:{} terminated!'.format(host, port))
+            sys.exit()
 
 
