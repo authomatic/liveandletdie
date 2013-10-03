@@ -5,7 +5,7 @@ from pyramid.response import Response
 
 
 def home(request):
-    return Response('Home')
+    return Response('Home Pyramid')
 
 
 if __name__ == '__main__':

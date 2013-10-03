@@ -10,7 +10,7 @@ app.config.from_object(__name__)
 
 @app.route('/')
 def home():
-    return 'Home'
+    return 'Home Flask'
 
 if __name__ == '__main__':
     
