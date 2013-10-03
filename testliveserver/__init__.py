@@ -86,36 +86,41 @@ def port_in_use(port, kill=False):
     """
     
     process = subprocess.Popen('lsof -i :{}'.format(port).split(), stdout=subprocess.PIPE)
-    
     headers = process.stdout.readline().split()
+    
     if not 'PID' in headers:
+        print('Port {} is free.'.format(port))
         return False
     
-    index = headers.index('PID')
+    index_pid = headers.index('PID')
+    index_cmd = headers.index('COMMAND')
     
     row = process.stdout.readline().split()
-    if len(row) < index:
+    if len(row) < index_pid:
         return False
     
-    pid = int(row[index])
-    if pid:
+    pid = int(row[index_pid])
+    command = row[index_cmd]
+    
+    if pid and command == 'python':
         print('Port {} is already being used by process {}!'.format(port, pid))
     
-    if kill:
-        print('Killing process with id {} listening on port {}!'.format(pid, port))
-        os.kill(pid, signal.SIGTERM)
-        
-        # Check whether it was really killed.
-        try:
-            # If still alive
-            os.kill(pid, 0)
-            # call me again
-            return port_in_use(port, kill)
-        except OSError:
-            # If killed
-            return False
-    else:
-        return pid
+        if kill:
+            print('Killing process with id {} listening on port {}!'.format(pid, port))
+            os.kill(pid, signal.SIGKILL)
+            
+            # Check whether it was really killed.
+            try:
+                # If still alive
+                os.kill(pid, 0)
+                # call me again
+                print('Process {} is still alive! checking again...'.format(pid))
+                return port_in_use(port, kill)
+            except OSError:
+                # If killed
+                return False
+        else:
+            return pid
 
 
 class Base(object):
@@ -135,7 +140,7 @@ class Base(object):
         URL where to check whether the server is running default is "http://{host}".
     """
     
-    def __init__(self, path, host='127.0.0.1', port=8000, timeout=10.0, url=None):
+    def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0, url=None):
         
         self.path = path
         self.timeout = timeout
@@ -171,7 +176,6 @@ class Base(object):
         """Starts a live server in a separate process and checks whether it is running."""
         
         pid = port_in_use(self.port, kill)
-        print pid, self.port
         
         if pid:
             raise Exception('Port {} is already being used by process {}!'.format(self.port, pid))
@@ -179,8 +183,9 @@ class Base(object):
         host = str(self.host)
         if re.match(_VALID_HOST_PATTERN, host):
             self.process = subprocess.Popen(self.create_command())
+            print('Starting process PID: {}'.format(self.process.pid))
             duration = self.check()
-            print('Live server started in {} seconds.'.format(duration))
+            print('Live server started in {} seconds. PID: {}'.format(duration, self.process.pid))
             return self.process
         else:
             raise Exception('{} is not a valid host!'.format(host))
@@ -191,7 +196,8 @@ class Base(object):
         """Stops the server if it is running."""
         
         if self.process:
-            self.process.terminate()
+            self.process.kill()
+            self.process.wait()
 
 
 class WrapperBase(Base):
@@ -262,5 +268,20 @@ class WsgirefSimpleServer(WrapperBase):
             
             print('wsgiref.simple_server running at {}:{} terminated!'.format(host, port))
             sys.exit()
+    
+
+class Django(Base):
+    def create_command(self):
+        return [
+            'python',
+            os.path.join(self.path, 'manage.py'),
+            'runserver',
+            '{}:{}'.format(self.host, self.port),
+        ]
+
+
+
+
+
 
 
