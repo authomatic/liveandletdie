@@ -1,6 +1,7 @@
 .project
 .pydevproject
 .settings
+.externalToolBuilders/
 __pycache__
 *.pyc
 *.log
