@@ -133,6 +133,7 @@ The interface is the same for all of the supported frameworks.
 
 .. code-block:: python
 
+    # Start the app.
     # If kill is True, it will kill any Python process listening on port 5555
     process = app.start(kill=True)
 
