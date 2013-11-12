@@ -5,7 +5,7 @@ Test Live Server
 **Test Live Server** is a simple package to simplify launching and
 terminating of web development servers from **BDD** or **functional** tests.
 I have created it for functional testing of the
-[Authomatic](peterhudec.github.io/authomatic/‎) package.
+`Authomatic <peterhudec.github.io/authomatic/>`_ package.
 
 The package Currently supports **Google App engine**, **Django**,
 **Flask** and **wsgiref.simple_server**. Support for other frameworks will
