@@ -2,84 +2,147 @@
 Test Live Server
 ================
 
-**Test Live Server** is a very simple utility for running
-a Flask development server for **BDD/functional** testing purposes.
+**Test Live Server** is a simple package to simplify launching and
+terminating of web development servers from **BDD** or **functional** tests.
+I have created it for functional testing of the
+[Authomatic](peterhudec.github.io/authomatic/‎) package.
 
-I'm planning to add support for other frameworks in future.
+The package Currently supports **Google App engine**, **Django**,
+**Flask** and **wsgiref.simple_server**. Support for other frameworks will
+hopefully be added in future.
 
-Usage
+USAGE
 -----
 
-Add the **Test Live Server** capability to your Flask app by calling the
-``testliveserver.flask.live_server(app)`` function just before the ``app.run()``.
+You first need to make instance of one of the framework classes.
+
+Django
+^^^^^^
 
 .. code-block:: python
-	
-	from flask import Flask
 
-	DEBUG = True
-	SECRET_KEY = 'development key'
-	USERNAME = 'admin'
-	PASSWORD = 'default'
+    import testliveserver
 
-	app = Flask(__name__)
-	app.config.from_object(__name__)
+    # Django
+    app = testliveserver.Django('path/to/django/project/',
+                                host='0.0.0.0',
+                                port=5555,
+                                timeout=60.0)
 
-	@app.route('/')
-	def home():
-	    return 'Home'
-
-	if __name__ == '__main__':
-	    
-	    # This does nothing unles you run this module with --testliveserver flag.
-	    from testliveserver.flask import live_server
-	    live_server(app)
-	    
-	    app.run()
-
-In your test setup call the ``testliveserver.start(app_main, port_number, timeout=10.0)``
-function which will run the Flask app with the ``--testliveserver`` flag
-and check whether the server started within specified timeout in seconds.
-If the server started successfully, the function returns the process of the running app
-which you can terminate in the teardown.
-If the server didn't start within the timeout it raises an exception.
+Google App Engine
+^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
-	
-	import testliveserver
-	import unittest
-	from selenium import webdriver
 
-	class TestWebsite(unittest.TestCase):
-	    
-	    @classmethod
-	    def setUpClass(cls):
-	    	# Start the server
-	        try:
-	            cls.process = testliveserver.start('main.py', 8001)
-	        except Exception as e:
-	            # Skip all tests if not started in timeout.
-	            raise unittest.SkipTest(e.message)
-	        
-	        # Start browser.
-	        cls.browser = webdriver.Chrome()
-	        cls.browser.implicitly_wait(3)
-	    
-	    @classmethod
-	    def tearDownClass(cls):
-	        # Stop server.
-	        if hasattr(cls, 'process'):
-	            cls.process.terminate()
-	         
-	        # Stop browser.
-	        if hasattr(cls, 'browser'):
-	            cls.browser.quit()
-	    
-	    def test_visit_start_page(self):
-	    	self.browser.get('HTTP://127.0.0.1:8001')
-	        page_text = self.browser.find_element_by_tag_name('body').text
-	        self.assertIn('Home', page_text)
+    import testliveserver
+
+    app = testliveserver.GAE('path/to/dev_appserver.py',
+                             'path/to/gae/app/dir', # containing app.yaml file
+                             host='0.0.0.0',
+                             port=5555,
+                             timeout=60.0)
+
+Flask
+^^^^^
+
+By **Flask** you must wrap the **WSGI application** in
+``testliveserver.Flask.wrap(app)``.
+
+.. code-block:: python
+
+    # flask/app/main.py
+    from flask import Flask
+
+    DEBUG = True
+    SECRET_KEY = 'development key'
+    USERNAME = 'admin'
+    PASSWORD = 'default'
+
+    app = Flask(__name__)
+    app.config.from_object(__name__)
+
+    @app.route('/')
+    def home():
+        return 'Hello World!'
+
+    if __name__ == '__main__':
+
+        # This does nothing unless you run this module with --testliveserver flag.
+        import testliveserver
+        testliveserver.Flask.wrap(app)
+
+        app.run()
 
 
-	if __name__ == '__main__':
-	    unittest.main()
+.. code-block:: python
+
+    import testliveserver
+
+    app = testliveserver.Flask('path/to/flask/app/main.py',
+                               host='0.0.0.0',
+                               port=5555,
+                               timeout=60.0)
+
+Pyramid (wsgiref.simple_server)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By ``wsgiref.simple_server`` you must wrap the **WSGI application** in
+``testliveserver.WsgirefSimpleServer.wrap(app)``.
+
+.. code-block:: python
+
+    # pyramid/app/main.py
+    from wsgiref.simple_server import make_server
+
+    from pyramid.config import Configurator
+    from pyramid.response import Response
+
+
+    def home(request):
+        return Response('Hello World!')
+
+
+    if __name__ == '__main__':
+
+        config = Configurator()
+        config.add_route('home', '/')
+        config.add_view(home, route_name='home')
+        app = config.make_wsgi_app()
+
+        # This does nothing unless you run this module with --testliveserver flag.
+        import testliveserver
+        testliveserver.WsgirefSimpleServer.wrap(app)
+
+        server = make_server('127.0.0.1', 8080, app)
+        server.serve_forever()
+
+
+.. code-block:: python
+
+    import testliveserver
+
+    app = testliveserver.Flask('path/to/pyramid/app/main.py',
+                               host='0.0.0.0',
+                               port=5555,
+                               timeout=60.0)
+
+Using the App instance
+^^^^^^^^^^^^^^^^^^^^^^
+
+The interface is the same for all of the supported frameworks.
+
+.. code-block:: python
+
+    # If kill is True, it will kill any Python process listening on port 5555
+    process = app.start(kill=True)
+
+    # You can check whether it is running
+    is_running = app.check()
+
+    # Stop it
+    app.stop()
+
+You can see the code of a simple **py.test** example test here:
+https://github.com/peterhudec/testliveserver/blob/master/test_examples/pytest_example/tests.py
+
+Enjoy!
