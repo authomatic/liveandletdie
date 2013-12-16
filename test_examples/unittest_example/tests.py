@@ -1,24 +1,32 @@
-import testliveserver
+from os import path
+
+import testliveserver as tls
 import unittest
 from selenium import webdriver
 
-HOST = '127.0.0.1:8001'
-HOME = 'http://{}/'.format(HOST)
-LIVESERVER_PATH = testliveserver.abspath(__file__, '../../sample_apps/flask_sample/main.py')
 
-class TestWebsite(unittest.TestCase):
+def abspath(pth):
+    return path.join(path.dirname(__file__), '../..', pth)
+
+
+PORT = 8001
+
+
+class Base(unittest.TestCase):
+    EXPECTED_TEXT = None
+    APP = None
     
     @classmethod
     def setUpClass(cls):
         try:
             # Run the live server.
-            cls.process = testliveserver.start(LIVESERVER_PATH, HOST)
+            cls.APP.start(kill=True)
         except Exception as e:
-            # Stop all tests if not started in timeout.
+            # Skip test if not started.
             raise unittest.SkipTest(e.message)
         
         # Start browser.
-        cls.browser = webdriver.Chrome()
+        cls.browser = webdriver.PhantomJS()
         cls.browser.implicitly_wait(3)
     
     @classmethod
@@ -32,9 +40,30 @@ class TestWebsite(unittest.TestCase):
             cls.browser.quit()
     
     def test_visit_start_page(self):
-        self.browser.get(HOME)
+        self.browser.get(self.APP.url)
         page_text = self.browser.find_element_by_tag_name('body').text
-        self.assertIn('Home', page_text)
+        self.assertIn(self.EXPECTED_TEXT, page_text)
+
+
+class TestFlask(Base):
+    EXPECTED_TEXT = 'Home Flask'
+    APP = tls.Flask(abspath('sample_apps/flask/main.py'), port=PORT)
+
+
+class TestPyramid(Base):
+    EXPECTED_TEXT = 'Home Pyramid'
+    APP = tls.WsgirefSimpleServer(abspath('sample_apps/pyramid/main.py'), port=PORT)
+
+
+class TestDjango(Base):
+    EXPECTED_TEXT = 'Home Django'
+    APP = tls.Django(abspath('sample_apps/django/example'), port=PORT)
+
+
+class TestGAE(Base):
+    EXPECTED_TEXT = 'Home GAE'
+    APP = tls.GAE(abspath('venv/bin/google_appengine/dev_appserver.py'),
+                  abspath('sample_apps/gae'), port=PORT)
 
 
 if __name__ == '__main__':
