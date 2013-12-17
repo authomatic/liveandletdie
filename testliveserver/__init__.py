@@ -140,7 +140,7 @@ class Base(object):
         URL where to check whether the server is running default is "http://{host}".
     """
     
-    def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0, url=None):
+    def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0, url=None, executable='python'):
         
         self.path = path
         self.timeout = timeout
@@ -148,6 +148,7 @@ class Base(object):
         self.host = host
         self.port = port
         self.process = None
+        self.executable = executable
     
     
     def check(self):
@@ -205,7 +206,7 @@ class WrapperBase(Base):
     
     def create_command(self):
         return [
-            'python',
+            self.executable,
             self.path,
             '--testliveserver',
             '{}:{}'.format(self.host, self.port),
@@ -245,7 +246,7 @@ class GAE(Base):
     
     def create_command(self):
         return [
-            'python',
+            self.executable,
             self.dev_appserver_path,
             '--host={}'.format(self.host),
             '--port={}'.format(self.port),
@@ -273,7 +274,7 @@ class WsgirefSimpleServer(WrapperBase):
 class Django(Base):
     def create_command(self):
         return [
-            'python',
+            self.executable,
             os.path.join(self.path, 'manage.py'),
             'runserver',
             '{}:{}'.format(self.host, self.port),
