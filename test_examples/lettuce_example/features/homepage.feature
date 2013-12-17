@@ -3,7 +3,15 @@ Feature: Visit homepage
 	As a visitor
 	I want to visit the website
 
-	Scenario: Homepage showing "Home"
-		Given a website running at "http://localhost:8001"
-		When I go to that location
-		Then I see "Home"
+	Scenario Outline: Homepage working
+		Given a web application based on <framework> located at <path>
+		When I launch that application wit the subcommand <subcommand>
+		When I go to the app's url
+		Then I see "<text>"
+	
+	Examples:
+		| framework				| path				| subcommand									| text			|
+		| Flask					| flask/main.py		| 												| Home Flask	|
+		| GAE					| gae				| venv/bin/google_appengine/dev_appserver.py	| Home GAE		|
+		| Django				| django/example	| 												| Home Django	|
+		| WsgirefSimpleServer	| pyramid/main.py	| 												| Home Pyramid	|
