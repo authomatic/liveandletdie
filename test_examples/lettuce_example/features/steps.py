@@ -27,7 +27,7 @@ def when_i_launch_that_application_wit_the_subcommand_subcommand(step, dev_appse
     else:
         world.app = world.AppClass(world.path, port=port)
     
-    world.app.start(kill=True)
+    world.app.live(kill=True)
     
 
 
@@ -40,4 +40,4 @@ def when_i_go_to_the_app_s_url(step):
 def then_i_see_text(step, text):
     page_text = world.browser.find_element_by_tag_name('body').text    
     assert text in page_text
-    world.app.stop()
+    world.app.die()

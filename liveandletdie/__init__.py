@@ -70,10 +70,24 @@ def check(server):
     return server.check()
 
 
-def start(server):
-    """Starts a live server in a separate process and checks whether it is running."""
-    
-    return server.start()
+def live(app):
+    """Starts a live app in a separate process and checks whether it is running."""
+    return app.live()
+
+
+def start(*args, **kwargs):
+    """Alias for :funct:`live`"""
+    live(*args, **kwargs)
+
+
+def die(app):
+    """Starts a live app in a separate process and checks whether it is running."""
+    return app.live()
+
+
+def stop(*args, **kwargs):
+    """Alias for :funct:`die`"""
+    die(*args, **kwargs)
 
 
 def port_in_use(port, kill=False, enable_logging=False):
@@ -199,7 +213,7 @@ class Base(object):
         return (datetime.now() - t).total_seconds()
     
     
-    def start(self, kill=False):
+    def live(self, kill=False):
         """
         Starts a live server in a separate process
         and checks whether it is running.
@@ -231,7 +245,12 @@ class Base(object):
             raise Exception('{} is not a valid host!'.format(host))
     
     
-    def stop(self):
+    def start(self, *args, **kwargs):
+        """Alias for :meth:`.live`"""
+        self.live(*args, **kwargs)
+
+
+    def die(self):
         """Stops the server if it is running."""
 
         _log(self.enable_logging,
@@ -246,6 +265,11 @@ class Base(object):
 
         if self.kill_orphans:
             self._kill_orphans()
+
+
+    def stop(self, *args, **kwargs):
+        """Alias for :meth:`.die`"""
+        self.die(*args, **kwargs)
 
 
     def _kill_orphans(self):

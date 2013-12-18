@@ -49,12 +49,12 @@ def app(request):
     
     try:
         # Run the live server.
-        app.start(kill=True)
+        app.live(kill=True)
     except Exception as e:
         # Skip test if not started.
         pytest.fail(e.message)
     
-    request.addfinalizer(lambda: app.stop())
+    request.addfinalizer(lambda: app.die())
     return app
 
 
