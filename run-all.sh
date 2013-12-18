@@ -1,6 +1,9 @@
-echo "UNITTEST"
+MAGENTA=$(tput setaf 5)
+NORMAL=$(tput sgr0)
+
+echo "${MAGENTA}\n\nUNITTEST:\n${NORMAL}"
 sh run-unittest.sh
-echo "PYTEST"
+echo "${MAGENTA}\n\nPYTEST:\n${NORMAL}"
 sh run-pytest.sh
-echo "LETTUCE"
+echo "${MAGENTA}\n\nLETTUCE:\n${NORMAL}"
 sh run-lettuce.sh
