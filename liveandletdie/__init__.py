@@ -90,7 +90,8 @@ def port_in_use(port, kill=False, enable_logging=False):
         The process id as :class:`int` if in use, otherwise ``False`` .
     """
     
-    process = subprocess.Popen('lsof -i :{}'.format(port).split(), stdout=subprocess.PIPE)
+    process = subprocess.Popen('lsof -i :{}'.format(port).split(),
+                               stdout=subprocess.PIPE)
     headers = process.stdout.readline().split()
     
     if not 'PID' in headers:
@@ -108,24 +109,38 @@ def port_in_use(port, kill=False, enable_logging=False):
     command = row[index_cmd]
     
     if pid and command == 'python':
-        _log(enable_logging, 'Port {} is already being used by process {}!'.format(port, pid))
+        _log(enable_logging,
+            'Port {} is already being used by process {}!'.format(port, pid))
     
         if kill:
-            _log(enable_logging, 'Killing process with id {} listening on port {}!'.format(pid, port))
+            _log(enable_logging,
+                'Killing process with id {} listening on port {}!'
+                    .format(pid, port))
             os.kill(pid, signal.SIGKILL)
             
             # Check whether it was really killed.
             try:
                 # If still alive
-                os.kill(pid, 0)
+                kill_process(pid, enable_logging)
                 # call me again
-                _log(enable_logging, 'Process {} is still alive! checking again...'.format(pid))
+                _log(enable_logging,
+                    'Process {} is still alive! checking again...'.format(pid))
                 return port_in_use(port, kill)
             except OSError:
                 # If killed
                 return False
         else:
             return pid
+
+
+def kill_process(pid, enable_logging=False):
+    try:
+        _log(enable_logging, 'Killing process with id {}!'.format(pid))
+        os.kill(int(pid), signal.SIGKILL)
+        return 
+    except OSError:
+        # If killed
+        return False
 
 
 class Base(object):
@@ -142,11 +157,13 @@ class Base(object):
         Timeout in seconds for the check.
     
     :url:
-        URL where to check whether the server is running default is "http://{host}".
+        URL where to check whether the server is running.
+        Default is "http://{host}".
     """
     
     def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0,
-                 url=None, executable='python', enable_logging=False, suppress_output=True):
+                 url=None, executable='python', enable_logging=False, suppress_output=True,
+                 kill_orphans=False):
         
         self.path = path
         self.timeout = timeout
@@ -157,6 +174,7 @@ class Base(object):
         self.executable = executable
         self.enable_logging = enable_logging
         self.suppress_output = suppress_output
+        self.kill_orphans = kill_orphans
     
     
     def check(self):
@@ -173,45 +191,65 @@ class Base(object):
             except urllib2.URLError:
                 if sleeped > self.timeout:
                     raise Exception('{} server {} didn\'t start in specified timeout {} seconds!'\
-                                    .format(self.__class__.__name__,
-                                            self.url,
-                                            self.timeout))
+                                        .format(self.__class__.__name__,
+                                                self.url,
+                                                self.timeout))
                 sleeped = (datetime.now() - t).total_seconds()
         
         return (datetime.now() - t).total_seconds()
     
     
     def start(self, kill=False):
-        """Starts a live server in a separate process and checks whether it is running."""
+        """
+        Starts a live server in a separate process
+        and checks whether it is running.
+        """
         
         pid = port_in_use(self.port, kill)
         
         if pid:
-            raise Exception('Port {} is already being used by process {}!'.format(self.port, pid))
+            raise Exception('Port {} is already being used by process {}!'
+                                .format(self.port, pid))
         
         host = str(self.host)
         if re.match(_VALID_HOST_PATTERN, host):
             if self.suppress_output:
                 with open(os.devnull, "w") as output:
-                    self.process = subprocess.Popen(self.create_command(), stdout=output, stderr=output)
+                    self.process = subprocess.Popen(self.create_command(),
+                        stdout=output, stderr=output)
             else:
                 self.process = subprocess.Popen(self.create_command())
 
-            _log(self.enable_logging, 'Starting process PID: {}'.format(self.process.pid))
+            _log(self.enable_logging, 'Starting process PID: {}'
+                    .format(self.process.pid))
             duration = self.check()
-            _log(self.enable_logging, 'Live server started in {} seconds. PID: {}'.format(duration, self.process.pid))
+            _log(self.enable_logging,
+                 'Live server started in {} seconds. PID: {}'
+                 .format(duration, self.process.pid))
             return self.process
         else:
             raise Exception('{} is not a valid host!'.format(host))
     
     
-    
     def stop(self):
         """Stops the server if it is running."""
+
+        _log(self.enable_logging,
+            'Stopping {} server with PID: {} running at {}.'
+                .format(self.__class__.__name__,
+                        self.process.pid,
+                        self.url))
         
         if self.process:
             self.process.kill()
             self.process.wait()
+
+        if self.kill_orphans:
+            self._kill_orphans()
+
+
+    def _kill_orphans(self):
+        pass
 
 
 class WrapperBase(Base):
@@ -242,7 +280,9 @@ class Flask(WrapperBase):
             app.config['DEBUG'] = False
             app.run(host=host, port=port)
             
-            _log(self.enable_logging, 'Flask live server running at {}:{} terminated!'.format(host, port))
+            _log(self.enable_logging,
+                 'Flask live server running at {}:{} terminated!'
+                    .format(host, port))
             sys.exit()
     
 
@@ -253,7 +293,6 @@ class GAE(Base):
     """
     
     def __init__(self, dev_appserver_path, *args, **kwargs):
-        
         super(GAE, self).__init__(*args, **kwargs)
         self.dev_appserver_path = dev_appserver_path
         self.admin_port = kwargs.get('admin_port', 5555)
@@ -267,7 +306,19 @@ class GAE(Base):
             '--admin_port={}'.format(self.admin_port),
             self.path
         ]
-    
+
+    def _kill_orphans(self):
+        process = subprocess.Popen('ps -o pid,cmd -C python'.split(),
+                                   stdout=subprocess.PIPE)
+        headers = process.stdout.readline().split()
+        
+        _log(self.enable_logging, 'Killing orphaned GAE processes:')
+
+        for row in process.stdout:
+            if '_python_runtime.py' in row:
+                pid = row.split()[0]
+                kill_process(pid, self.enable_logging)
+
 
 class WsgirefSimpleServer(WrapperBase):
     
@@ -281,7 +332,9 @@ class WsgirefSimpleServer(WrapperBase):
             s.serve_forever()
             s.server_close()
             
-            _log(self.enable_logging, 'wsgiref.simple_server running at {}:{} terminated!'.format(host, port))
+            _log(self.enable_logging,
+                'wsgiref.simple_server running at {}:{} terminated!'
+                    .format(host, port))
             sys.exit()
     
 
@@ -293,10 +346,3 @@ class Django(Base):
             'runserver',
             '{}:{}'.format(self.host, self.port),
         ]
-
-
-
-
-
-
-

@@ -32,7 +32,8 @@ APPS = {
     'GAE': liveandletdie.GAE(
         abspath('venv/bin/google_appengine/dev_appserver.py'),
         abspath('sample_apps/gae'),
-        port=PORT
+        port=PORT,
+        kill_orphans=True
     ),
     'Django': liveandletdie.Django(
         abspath('sample_apps/django/example'),

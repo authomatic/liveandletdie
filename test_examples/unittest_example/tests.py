@@ -32,8 +32,7 @@ class Base(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # Stop server.
-        if hasattr(cls, 'process'):
-            cls.APP.stop()
+        cls.APP.stop()
          
         # Stop browser.
         if hasattr(cls, 'browser'):
@@ -63,7 +62,7 @@ class TestDjango(Base):
 class TestGAE(Base):
     EXPECTED_TEXT = 'Home GAE'
     APP = liveandletdie.GAE(abspath('venv/bin/google_appengine/dev_appserver.py'),
-                  abspath('sample_apps/gae'), port=PORT)
+                  abspath('sample_apps/gae'), port=PORT, kill_orphans=True)
 
 
 if __name__ == '__main__':
