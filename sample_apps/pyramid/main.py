@@ -16,9 +16,9 @@ if __name__ == '__main__':
     
     app = config.make_wsgi_app()
     
-    # This does nothing unles you run this module with --testliveserver flag.
-    import testliveserver
-    testliveserver.WsgirefSimpleServer.wrap(app)
+    # This does nothing unles you run this module with --liveandletdie flag.
+    import liveandletdie
+    liveandletdie.WsgirefSimpleServer.wrap(app)
     
     server = make_server('127.0.0.1', 8080, app)
     

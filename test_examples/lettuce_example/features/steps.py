@@ -4,13 +4,13 @@ import os
 from lettuce import step, world
 from selenium import webdriver
 
-import testliveserver
+import liveandletdie
 
 
 @step(u'Given a web application based on (\w+) located at ([\w/.]+)')
 def given_a_web_application_based_on_framework_located_at_path(step, framework, path):
     
-    world.AppClass = getattr(testliveserver, framework)
+    world.AppClass = getattr(liveandletdie, framework)
     world.path = os.path.join(os.path.dirname(__file__), '../../../sample_apps', path)
 
 

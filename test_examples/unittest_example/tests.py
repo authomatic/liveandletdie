@@ -1,6 +1,6 @@
 from os import path
 
-import testliveserver as tls
+import liveandletdie
 import unittest
 from selenium import webdriver
 
@@ -33,7 +33,7 @@ class Base(unittest.TestCase):
     def tearDownClass(cls):
         # Stop server.
         if hasattr(cls, 'process'):
-            cls.process.terminate()
+            cls.APP.stop()
          
         # Stop browser.
         if hasattr(cls, 'browser'):
@@ -47,22 +47,22 @@ class Base(unittest.TestCase):
 
 class TestFlask(Base):
     EXPECTED_TEXT = 'Home Flask'
-    APP = tls.Flask(abspath('sample_apps/flask/main.py'), port=PORT)
+    APP = liveandletdie.Flask(abspath('sample_apps/flask/main.py'), port=PORT)
 
 
 class TestPyramid(Base):
     EXPECTED_TEXT = 'Home Pyramid'
-    APP = tls.WsgirefSimpleServer(abspath('sample_apps/pyramid/main.py'), port=PORT)
+    APP = liveandletdie.WsgirefSimpleServer(abspath('sample_apps/pyramid/main.py'), port=PORT)
 
 
 class TestDjango(Base):
     EXPECTED_TEXT = 'Home Django'
-    APP = tls.Django(abspath('sample_apps/django/example'), port=PORT)
+    APP = liveandletdie.Django(abspath('sample_apps/django/example'), port=PORT)
 
 
 class TestGAE(Base):
     EXPECTED_TEXT = 'Home GAE'
-    APP = tls.GAE(abspath('venv/bin/google_appengine/dev_appserver.py'),
+    APP = liveandletdie.GAE(abspath('venv/bin/google_appengine/dev_appserver.py'),
                   abspath('sample_apps/gae'), port=PORT)
 
 

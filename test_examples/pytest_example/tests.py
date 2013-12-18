@@ -4,9 +4,13 @@ An example of testing a Flask app with py.test and Selenium with help of testliv
 """
 
 from os import path
+import sys
+
+print sys.path
+
 from selenium import webdriver
 import pytest
-import testliveserver as tls
+import liveandletdie
 
 
 def abspath(pth):
@@ -17,20 +21,20 @@ PORT = 8001
 
 
 APPS = {
-    'Pyramid': tls.WsgirefSimpleServer(
+    'Pyramid': liveandletdie.WsgirefSimpleServer(
         abspath('sample_apps/pyramid/main.py'),
         port=PORT
     ),
-    'Flask': tls.Flask(
+    'Flask': liveandletdie.Flask(
         abspath('sample_apps/flask/main.py'),
         port=PORT
     ),
-    'GAE': tls.GAE(
+    'GAE': liveandletdie.GAE(
         abspath('venv/bin/google_appengine/dev_appserver.py'),
         abspath('sample_apps/gae'),
         port=PORT
     ),
-    'Django': tls.Django(
+    'Django': liveandletdie.Django(
         abspath('sample_apps/django/example'),
         port=PORT
     ),
@@ -56,7 +60,7 @@ def app(request):
 @pytest.fixture('module')
 def browser(request):
     
-    tls.port_in_use(PORT, True)
+    liveandletdie.port_in_use(PORT, True)
     
     browser = webdriver.PhantomJS()
     browser.implicitly_wait(3)

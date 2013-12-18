@@ -1,1 +1,6 @@
-sh run-unittest.sh && sh run-pytest.sh && sh run-lettuce.sh
+echo "UNITTEST"
+sh run-unittest.sh
+echo "PYTEST"
+sh run-pytest.sh
+echo "LETTUCE"
+sh run-lettuce.sh

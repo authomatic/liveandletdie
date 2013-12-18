@@ -13,8 +13,8 @@ NORMAL=$(tput sgr0)
 # Create venv
 virtualenv venv
 
-# Add path file
-pwd -LP > venv/lib/python2.7/site-packages/testliveserver.pth
+# Activate venv
+. venv/bin/activate
 
 # Download and extract Chromedriver according to OS architecture
 if [ `getconf LONG_BIT` = "64" ]
@@ -31,12 +31,6 @@ fi
 # Move the executable and change permissions
 mv chromedriver venv/bin
 chmod 777 venv/bin/chromedriver
-
-# Activate venv
-. venv/bin/activate
-
-# Install requirements
-pip install --requirement requirements.txt
 
 #########################
 # Google App Engine SDK #
@@ -55,6 +49,15 @@ PTH=venv/lib/python2.7/site-packages/gae.pth
 echo "${GREEN}Adding pth file:${NORMAL} $PTH"
 echo "$(pwd -LP)/venv/bin/google_appengine/" >> $PTH
 echo "import dev_appserver; dev_appserver.fix_sys_path()" >> $PTH
+
+
+
+
+# Install requirements
+pip install -r requirements.txt
+
+# Add path file
+pwd -LP > venv/lib/python2.7/site-packages/liveandletdie.pth
 
 # Deactivate venv (redundant?)
 deactivate

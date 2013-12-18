@@ -12,6 +12,11 @@ import urllib2
 _VALID_HOST_PATTERN = r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}([:]\d+)?$'
 
 
+def _log(enable_logging, message):
+    if enable_logging:
+        print('LIVEANDLETDIE: {}'.format(message))
+
+
 def _validate_host(host):
     if re.match(_VALID_HOST_PATTERN, host):
         return host
@@ -34,27 +39,27 @@ def split_host(host):
     return host, int(port)
 
 
-def parse_args():
+def parse_args(enable_logging=False):
     """
     Parses command line arguments.
     
-    Looks for --testliveserver [host]
+    Looks for --liveandletdie [host]
     
     :returns:
         A ``(str(host), int(port))`` or ``(None, None)`` tuple.
     """
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--testliveserver',
+    parser.add_argument('--liveandletdie',
                         help='Run as test live server.',
                         type=_validate_host,
                         nargs='?',
                         const='170.0.0.1:5000')
     args = parser.parse_args()
         
-    if args.testliveserver:
-        print 'Running as test live server at {}'.format(args.testliveserver)
-        return split_host(args.testliveserver)
+    if args.liveandletdie:
+        _log(enable_logging, 'Running as test live server at {}'.format(args.liveandletdie))
+        return split_host(args.liveandletdie)
     else:
         return (None, None)
 
@@ -71,7 +76,7 @@ def start(server):
     return server.start()
 
 
-def port_in_use(port, kill=False):
+def port_in_use(port, kill=False, enable_logging=False):
     """
     Checks whether a port is free or not.
     
@@ -89,7 +94,7 @@ def port_in_use(port, kill=False):
     headers = process.stdout.readline().split()
     
     if not 'PID' in headers:
-        print('Port {} is free.'.format(port))
+        _log(enable_logging, 'Port {} is free.'.format(port))
         return False
     
     index_pid = headers.index('PID')
@@ -103,10 +108,10 @@ def port_in_use(port, kill=False):
     command = row[index_cmd]
     
     if pid and command == 'python':
-        print('Port {} is already being used by process {}!'.format(port, pid))
+        _log(enable_logging, 'Port {} is already being used by process {}!'.format(port, pid))
     
         if kill:
-            print('Killing process with id {} listening on port {}!'.format(pid, port))
+            _log(enable_logging, 'Killing process with id {} listening on port {}!'.format(pid, port))
             os.kill(pid, signal.SIGKILL)
             
             # Check whether it was really killed.
@@ -114,7 +119,7 @@ def port_in_use(port, kill=False):
                 # If still alive
                 os.kill(pid, 0)
                 # call me again
-                print('Process {} is still alive! checking again...'.format(pid))
+                _log(enable_logging, 'Process {} is still alive! checking again...'.format(pid))
                 return port_in_use(port, kill)
             except OSError:
                 # If killed
@@ -140,7 +145,8 @@ class Base(object):
         URL where to check whether the server is running default is "http://{host}".
     """
     
-    def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0, url=None, executable='python'):
+    def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0,
+                 url=None, executable='python', enable_logging=False, suppress_output=True):
         
         self.path = path
         self.timeout = timeout
@@ -149,6 +155,8 @@ class Base(object):
         self.port = port
         self.process = None
         self.executable = executable
+        self.enable_logging = enable_logging
+        self.suppress_output = suppress_output
     
     
     def check(self):
@@ -183,10 +191,15 @@ class Base(object):
         
         host = str(self.host)
         if re.match(_VALID_HOST_PATTERN, host):
-            self.process = subprocess.Popen(self.create_command())
-            print('Starting process PID: {}'.format(self.process.pid))
+            if self.suppress_output:
+                with open(os.devnull, "w") as output:
+                    self.process = subprocess.Popen(self.create_command(), stdout=output, stderr=output)
+            else:
+                self.process = subprocess.Popen(self.create_command())
+
+            _log(self.enable_logging, 'Starting process PID: {}'.format(self.process.pid))
             duration = self.check()
-            print('Live server started in {} seconds. PID: {}'.format(duration, self.process.pid))
+            _log(self.enable_logging, 'Live server started in {} seconds. PID: {}'.format(duration, self.process.pid))
             return self.process
         else:
             raise Exception('{} is not a valid host!'.format(host))
@@ -208,7 +221,7 @@ class WrapperBase(Base):
         return [
             self.executable,
             self.path,
-            '--testliveserver',
+            '--liveandletdie',
             '{}:{}'.format(self.host, self.port),
         ]
 
@@ -229,7 +242,7 @@ class Flask(WrapperBase):
             app.config['DEBUG'] = False
             app.run(host=host, port=port)
             
-            print('Flask live server running at {}:{} terminated!'.format(host, port))
+            _log(self.enable_logging, 'Flask live server running at {}:{} terminated!'.format(host, port))
             sys.exit()
     
 
@@ -243,6 +256,7 @@ class GAE(Base):
         
         super(GAE, self).__init__(*args, **kwargs)
         self.dev_appserver_path = dev_appserver_path
+        self.admin_port = kwargs.get('admin_port', 5555)
     
     def create_command(self):
         return [
@@ -250,6 +264,7 @@ class GAE(Base):
             self.dev_appserver_path,
             '--host={}'.format(self.host),
             '--port={}'.format(self.port),
+            '--admin_port={}'.format(self.admin_port),
             self.path
         ]
     
@@ -259,7 +274,6 @@ class WsgirefSimpleServer(WrapperBase):
     @staticmethod
     def wrap(app):
         host, port = parse_args()
-        print '\nWsgirefSimpleServer {}:{}'.format(host, port)
         if host:            
             from wsgiref.simple_server import make_server
             
@@ -267,7 +281,7 @@ class WsgirefSimpleServer(WrapperBase):
             s.serve_forever()
             s.server_close()
             
-            print('wsgiref.simple_server running at {}:{} terminated!'.format(host, port))
+            _log(self.enable_logging, 'wsgiref.simple_server running at {}:{} terminated!'.format(host, port))
             sys.exit()
     
 
