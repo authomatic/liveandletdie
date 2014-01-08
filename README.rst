@@ -2,7 +2,7 @@
 Live and Let Die (former Test Live Server)
 ==========================================
 
-**Live and Let Die** is a simple package to simplify launching and
+**Live and Let Die** (former Test Live Server) is a simple package to simplify launching and
 terminating of web development servers from **BDD** or **functional** tests.
 I have created it for functional testing of the
 `Authomatic <peterhudec.github.io/authomatic/>`_ package.
