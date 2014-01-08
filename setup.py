@@ -1,16 +1,21 @@
 from setuptools import setup,find_packages
 
+NAME = 'liveandletdie'
+
 setup(
-    name='TestLiveServer',
-    version='0.0.2',
+    name=NAME,
+    version='0.0.0',
     packages=find_packages(),
     package_data={'': ['*.txt', '*.rst']},
     author='Peter Hudec',
     author_email='peterhudec@peterhudec.com',
-    description='Simple utility for running a Flask development server for BDD/functional testing purposes.',
+    description="""
+Simplifies launching and terminating of web development
+servers from BDD or functional tests.
+    """,
     long_description=open('README.rst').read(),
     keywords='Flask, BDD, TDD, functional testing, live server',
-    url='http://github.com/peterhudec/testliveserver',
+    url='http://github.com/peterhudec/{}'.format(NAME),
     license = 'MIT',
     classifiers=[
         'Development Status :: 3 - Alpha',
