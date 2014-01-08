@@ -14,7 +14,7 @@ The package Currently supports **Google App engine**, **Django**,
 **Flask** and **wsgiref.simple_server**. Support for other frameworks will
 hopefully be added in future.
 
-USAGE
+Usage
 -----
 
 You first need to make instance of one of the framework classes.
@@ -154,5 +154,27 @@ https://github.com/peterhudec/liveandletdie/blob/master/test_examples/pytest_exa
 
 Simple Lettuce example:
 https://github.com/peterhudec/liveandletdie/blob/master/test_examples/lettuce_example/tests.py
+
+Developers
+----------
+
+Clone:
+
+::
+    
+    $ git clone https://github.com/peterhudec/liveandletdie.git
+
+Bootstrap the development environment.
+This will create the ``./venv`` virtual environment in the project root.
+
+::
+    
+    $ sh bootstrap.sh
+
+Run tests:
+
+::
+    
+    $ sh run-all.sh
 
 Enjoy!
