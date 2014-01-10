@@ -2,17 +2,22 @@ import os
 import urllib
 import zipfile
 import platform
-import subprocess
+
+
+CHROMEDRIVER_VERSION = '2.8'
+GAE_SDK_VERSION = '1.8.3'
+CHROMEDRIVER_PATH_BASE = 'http://chromedriver.storage.googleapis.com/{}/'\
+    .format(CHROMEDRIVER_VERSION)
+
+ARCHITECTURE = platform.architecture()[0][:-3]
+PLATFORM = platform.platform()
 
 
 def after_install(options, home_dir):
-
     bootstrap_root = os.path.abspath(os.path.dirname(__file__))
     project_root = os.path.abspath(os.path.join(bootstrap_root, '..'))
 
     def _download_and_extract(url, extract_path):
-        filename = os.path.basename(url)
-
         print('Downloading {}'.format(url))
         tmp_zip_path = urllib.urlretrieve(url)[0]
         zf = zipfile.ZipFile(tmp_zip_path)
@@ -28,14 +33,25 @@ def after_install(options, home_dir):
             print('Creating PTH file: {}'.format(os.path.abspath(pth_path)))
             pth.writelines(content)
 
-    architecture = platform.architecture()[0][:-3]
+    if PLATFORM.lower().startswith('darwin'):
+        chromedriver_path = CHROMEDRIVER_PATH_BASE + 'chromedriver_mac32.zip'
+    elif PLATFORM.lower().startswith('linux'):
+        chromedriver_path = CHROMEDRIVER_PATH_BASE + \
+            'chromedriver_linux{}.zip'.format(ARCHITECTURE)
+    elif PLATFORM.lower().startswith('win'):
+        chromedriver_path = CHROMEDRIVER_PATH_BASE + 'chromedriver_win32.zip'
+    else:
+        chromedriver_path = None
 
-    _download_and_extract('https://chromedriver.googlecode.com/files/' +
-                          'chromedriver_linux{}_2.2.zip'.format(architecture),
-                          'bin')
-    
+    if chromedriver_path:
+        _download_and_extract(chromedriver_path, 'bin')
+        chromedriver_executable = os.path.join(home_dir, 'bin/chromedriver')
+        print('Setting permissions of {} to 755'
+              .format(chromedriver_executable))
+        os.chmod(chromedriver_executable, 755)
+
     _download_and_extract('http://googleappengine.googlecode.com/files/' +
-                          'google_appengine_1.8.3.zip',
+                          'google_appengine_{}.zip'.formal(GAE_SDK_VERSION),
                           'bin')
 
     _add_pth('liveandletdie', project_root)
