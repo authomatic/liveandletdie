@@ -177,4 +177,10 @@ Run tests:
     
     $ sh run-all.sh
 
+Or bootstrap and run tests in one step:
+
+::
+
+    $ sh bootstrap-and-test.sh
+
 Enjoy!

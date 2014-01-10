@@ -4,17 +4,16 @@ NAME = 'liveandletdie'
 
 setup(
     name=NAME,
-    version='0.0.0',
+    version='0.0.1',
     packages=find_packages(),
     package_data={'': ['*.txt', '*.rst']},
     author='Peter Hudec',
     author_email='peterhudec@peterhudec.com',
-    description="""
-Simplifies launching and terminating of web development
-servers from BDD or functional tests.
-    """,
+    description='Simplifies launching and terminating of web development '
+        'servers from BDD and functional tests.',
     long_description=open('README.rst').read(),
-    keywords='Flask, BDD, TDD, functional testing, live server',
+    keywords='Flask, Pyramid, Django, Google App Engine, GAE, BDD, TDD, '
+        'functional testing, live server',
     url='http://github.com/peterhudec/{}'.format(NAME),
     license = 'MIT',
     classifiers=[
@@ -26,7 +25,8 @@ servers from BDD or functional tests.
         'Programming Language :: Python :: 2.7',
         'Programming Language :: JavaScript',
         'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries',
+        'Topic :: Internet :: WWW/HTTP :: Dynamic Content :: '
+            'CGI Tools/Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
