@@ -63,7 +63,7 @@ def browser(request):
     
     liveandletdie.port_in_use(PORT, True)
     
-    browser = webdriver.PhantomJS()
+    browser = webdriver.Chrome()
     browser.implicitly_wait(3)
     
     request.addfinalizer(lambda: browser.quit())
