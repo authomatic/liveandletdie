@@ -332,9 +332,8 @@ class GAE(Base):
         ]
 
     def _kill_orphans(self):
-        process = subprocess.Popen('ps -o pid,cmd -C python'.split(),
-                                   stdout=subprocess.PIPE)
-        headers = process.stdout.readline().split()
+        process = subprocess.Popen('ps', stdout=subprocess.PIPE)
+        headers = process.stdout.readline()
         
         _log(self.enable_logging, 'Killing orphaned GAE processes:')
 
