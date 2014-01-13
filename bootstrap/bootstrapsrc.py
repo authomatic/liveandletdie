@@ -51,7 +51,7 @@ def after_install(options, home_dir):
         os.chmod(chromedriver_executable, 755)
 
     _download_and_extract('http://googleappengine.googlecode.com/files/' +
-                          'google_appengine_{}.zip'.formal(GAE_SDK_VERSION),
+                          'google_appengine_{}.zip'.format(GAE_SDK_VERSION),
                           'bin')
 
     _add_pth('liveandletdie', project_root)
