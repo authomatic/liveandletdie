@@ -14,14 +14,15 @@ _VALID_HOST_PATTERN = r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}([:]\d+)?$'
 
 def _log(enable_logging, message):
     if enable_logging:
-        print('LIVEANDLETDIE: {}'.format(message))
+        print('LIVEANDLETDIE: {0}'.format(message))
 
 
 def _validate_host(host):
     if re.match(_VALID_HOST_PATTERN, host):
         return host
     else:
-        raise argparse.ArgumentTypeError('{} is not a valid host!'.format(host))
+        raise argparse.ArgumentTypeError('{0} is not a valid host!'
+                                         .format(host))
 
 
 def split_host(host):
@@ -58,7 +59,8 @@ def parse_args(enable_logging=False):
     args = parser.parse_args()
         
     if args.liveandletdie:
-        _log(enable_logging, 'Running as test live server at {}'.format(args.liveandletdie))
+        _log(enable_logging, 'Running as test live server at {0}'
+             .format(args.liveandletdie))
         return split_host(args.liveandletdie)
     else:
         return (None, None)
@@ -104,12 +106,12 @@ def port_in_use(port, kill=False, enable_logging=False):
         The process id as :class:`int` if in use, otherwise ``False`` .
     """
     
-    process = subprocess.Popen('lsof -i :{}'.format(port).split(),
+    process = subprocess.Popen('lsof -i :{0}'.format(port).split(),
                                stdout=subprocess.PIPE)
     headers = process.stdout.readline().split()
     
     if not 'PID' in headers:
-        _log(enable_logging, 'Port {} is free.'.format(port))
+        _log(enable_logging, 'Port {0} is free.'.format(port))
         return False
     
     index_pid = headers.index('PID')
@@ -124,11 +126,11 @@ def port_in_use(port, kill=False, enable_logging=False):
     
     if pid and command == 'python':
         _log(enable_logging,
-            'Port {} is already being used by process {}!'.format(port, pid))
+            'Port {0} is already being used by process {1}!'.format(port, pid))
     
         if kill:
             _log(enable_logging,
-                'Killing process with id {} listening on port {}!'
+                'Killing process with id {0} listening on port {1}!'
                     .format(pid, port))
             os.kill(pid, signal.SIGKILL)
             
@@ -138,7 +140,7 @@ def port_in_use(port, kill=False, enable_logging=False):
                 kill_process(pid, enable_logging)
                 # call me again
                 _log(enable_logging,
-                    'Process {} is still alive! checking again...'.format(pid))
+                    'Process {0} is still alive! checking again...'.format(pid))
                 return port_in_use(port, kill)
             except OSError:
                 # If killed
@@ -149,12 +151,22 @@ def port_in_use(port, kill=False, enable_logging=False):
 
 def kill_process(pid, enable_logging=False):
     try:
-        _log(enable_logging, 'Killing process with id {}!'.format(pid))
+        _log(enable_logging, 'Killing process with id {0}!'.format(pid))
         os.kill(int(pid), signal.SIGKILL)
         return 
     except OSError:
         # If killed
         return False
+
+
+def _get_total_seconds(td):
+    """
+    Fixes the missing :meth:`datetime.timedelta.total_seconds()`
+    method in Python 2.6
+    """
+
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6)\
+           / 10**6
 
 
 class Base(object):
@@ -181,7 +193,7 @@ class Base(object):
         
         self.path = path
         self.timeout = timeout
-        self.url = url or 'http://{}:{}'.format(host, port)
+        self.url = url or 'http://{0}:{1}'.format(host, port)
         self.host = host
         self.port = port
         self.process = None
@@ -204,13 +216,13 @@ class Base(object):
                 response = urllib2.urlopen(self.url)
             except urllib2.URLError:
                 if sleeped > self.timeout:
-                    raise Exception('{} server {} didn\'t start in specified timeout {} seconds!'\
-                                        .format(self.__class__.__name__,
-                                                self.url,
-                                                self.timeout))
-                sleeped = (datetime.now() - t).total_seconds()
+                    raise Exception('{0} server {1} didn\'t start in '
+                                    'specified timeout {2} seconds!'
+                                    .format(self.__class__.__name__, self.url,
+                                            self.timeout))
+                sleeped = _get_total_seconds(datetime.now() - t)
         
-        return (datetime.now() - t).total_seconds()
+        return _get_total_seconds(datetime.now() - t)
     
     
     def live(self, kill=False):
@@ -222,8 +234,8 @@ class Base(object):
         pid = port_in_use(self.port, kill)
         
         if pid:
-            raise Exception('Port {} is already being used by process {}!'
-                                .format(self.port, pid))
+            raise Exception('Port {0} is already being used by process {1}!'
+                            .format(self.port, pid))
         
         host = str(self.host)
         if re.match(_VALID_HOST_PATTERN, host):
@@ -234,15 +246,15 @@ class Base(object):
             else:
                 self.process = subprocess.Popen(self.create_command())
 
-            _log(self.enable_logging, 'Starting process PID: {}'
-                    .format(self.process.pid))
+            _log(self.enable_logging, 'Starting process PID: {0}'
+                 .format(self.process.pid))
             duration = self.check()
             _log(self.enable_logging,
-                 'Live server started in {} seconds. PID: {}'
+                 'Live server started in {0} seconds. PID: {1}'
                  .format(duration, self.process.pid))
             return self.process
         else:
-            raise Exception('{} is not a valid host!'.format(host))
+            raise Exception('{0} is not a valid host!'.format(host))
     
     
     def start(self, *args, **kwargs):
@@ -254,7 +266,7 @@ class Base(object):
         """Stops the server if it is running."""
 
         _log(self.enable_logging,
-            'Stopping {} server with PID: {} running at {}.'
+            'Stopping {0} server with PID: {1} running at {2}.'
                 .format(self.__class__.__name__,
                         self.process.pid,
                         self.url))
@@ -284,7 +296,7 @@ class WrapperBase(Base):
             self.executable,
             self.path,
             '--liveandletdie',
-            '{}:{}'.format(self.host, self.port),
+            '{0}:{1}'.format(self.host, self.port),
         ]
 
 
@@ -305,7 +317,7 @@ class Flask(WrapperBase):
             app.run(host=host, port=port)
             
             _log(self.enable_logging,
-                 'Flask live server running at {}:{} terminated!'
+                 'Flask live server running at {0}:{1} terminated!'
                     .format(host, port))
             sys.exit()
     
@@ -325,9 +337,9 @@ class GAE(Base):
         return [
             self.executable,
             self.dev_appserver_path,
-            '--host={}'.format(self.host),
-            '--port={}'.format(self.port),
-            '--admin_port={}'.format(self.admin_port),
+            '--host={0}'.format(self.host),
+            '--port={0}'.format(self.port),
+            '--admin_port={0}'.format(self.admin_port),
             self.path
         ]
 
@@ -356,7 +368,7 @@ class WsgirefSimpleServer(WrapperBase):
             s.server_close()
             
             _log(self.enable_logging,
-                'wsgiref.simple_server running at {}:{} terminated!'
+                'wsgiref.simple_server running at {0}:{1} terminated!'
                     .format(host, port))
             sys.exit()
     
@@ -367,5 +379,5 @@ class Django(Base):
             self.executable,
             os.path.join(self.path, 'manage.py'),
             'runserver',
-            '{}:{}'.format(self.host, self.port),
+            '{0}:{1}'.format(self.host, self.port),
         ]
