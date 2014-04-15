@@ -75,5 +75,5 @@ def test_home(browser, app):
         
     browser.get(app.url)    
     page_text = browser.find_element_by_tag_name('body').text    
-    assert 'Home {}'.format(app.name) in page_text
+    assert 'Home {0}'.format(app.name) in page_text
 
