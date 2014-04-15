@@ -1,3 +1,8 @@
+Version 0.0.2
+-------------
+
+Made compatible with **Python 2.6**.
+
 Version 0.0.1
 -------------
 

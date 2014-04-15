@@ -4,7 +4,7 @@ NAME = 'liveandletdie'
 
 setup(
     name=NAME,
-    version='0.0.1',
+    version='0.0.2',
     packages=find_packages(),
     package_data={'': ['*.txt', '*.rst']},
     author='Peter Hudec',
@@ -22,6 +22,7 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: JavaScript',
         'Topic :: Internet :: WWW/HTTP',
