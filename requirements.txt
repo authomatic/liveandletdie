@@ -4,3 +4,4 @@ lettuce
 pyramid
 pytest
 selenium
+unittest2

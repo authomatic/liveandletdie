@@ -1,8 +1,12 @@
 from os import path
 
 import liveandletdie
-import unittest
 from selenium import webdriver
+
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 
 def abspath(pth):
