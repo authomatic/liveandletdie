@@ -15,3 +15,4 @@ TestLiveServer.egg-info/
 venv/
 liveandletdie.egg-info/
 venv26/
+bootstrap/bootstrap.py
