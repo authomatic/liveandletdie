@@ -14,7 +14,7 @@ setup(
     long_description=open('README.rst').read(),
     keywords='Flask, Pyramid, Django, Google App Engine, GAE, BDD, TDD, '
         'functional testing, live server',
-    url='http://github.com/peterhudec/{}'.format(NAME),
+    url='http://github.com/peterhudec/{0}'.format(NAME),
     license = 'MIT',
     classifiers=[
         'Development Status :: 3 - Alpha',
