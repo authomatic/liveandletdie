@@ -60,10 +60,8 @@ def app(request):
 
 @pytest.fixture('module')
 def browser(request):
-    
     liveandletdie.port_in_use(PORT, True)
-    
-    browser = webdriver.Chrome()
+    browser = webdriver.Firefox()
     browser.implicitly_wait(3)
     
     request.addfinalizer(lambda: browser.quit())
