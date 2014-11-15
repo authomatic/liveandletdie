@@ -243,7 +243,7 @@ class Base(object):
         if pid:
             raise Exception('Port {0} is already being used by process {1}!'
                             .format(self.port, pid))
-        
+
         host = str(self.host)
         if re.match(_VALID_HOST_PATTERN, host):
             if self.suppress_output:
@@ -341,14 +341,18 @@ class GAE(Base):
         self.admin_port = kwargs.get('admin_port', 5555)
     
     def create_command(self):
-        return [
-            self.executable,
+        command = [
             self.dev_appserver_path,
             '--host={0}'.format(self.host),
             '--port={0}'.format(self.port),
             '--admin_port={0}'.format(self.admin_port),
             self.path
         ]
+
+        if self.dev_appserver_path.endswith(('.py', '.pyc')):
+            command = [self.executable] + command
+
+        return command
 
     def _kill_orphans(self):
         process = subprocess.Popen('ps', stdout=subprocess.PIPE)
