@@ -281,6 +281,7 @@ class Base(object):
         if self.process:
             self.process.kill()
             self.process.wait()
+            port_in_use(self.port, kill=True)
 
         if self.kill_orphans:
             self._kill_orphans()
