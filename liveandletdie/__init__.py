@@ -1,9 +1,9 @@
-from datetime import datetime
 import argparse
+from datetime import datetime
 import os
+import platform
 import re
 import signal
-import socket
 import subprocess
 import sys
 import urllib2
@@ -105,8 +105,15 @@ def port_in_use(port, kill=False, enable_logging=False):
     :returns:
         The process id as :class:`int` if in use, otherwise ``False`` .
     """
-    
-    process = subprocess.Popen('lsof -i :{0}'.format(port).split(),
+
+    command_template = 'lsof -i :{0}'
+
+    # If OSX
+    if platform.platform().lower().startswith('darwin'):
+        # https://stackoverflow.com/questions/4421633/who-is-listening-on-a-given-tcp-port-on-mac-os-x/4421674#4421674
+        command_template = 'lsof -iTCP:{0} -sTCP:LISTEN'
+
+    process = subprocess.Popen(command_template.format(port).split(),
                                stdout=subprocess.PIPE)
     headers = process.stdout.readline().split()
     
@@ -124,7 +131,7 @@ def port_in_use(port, kill=False, enable_logging=False):
     pid = int(row[index_pid])
     command = row[index_cmd]
     
-    if pid and command == 'python':
+    if pid and command.startswith('python'):
         _log(enable_logging,
             'Port {0} is already being used by process {1}!'.format(port, pid))
     
