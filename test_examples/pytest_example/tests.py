@@ -30,7 +30,7 @@ APPS = {
         port=PORT
     ),
     'GAE': liveandletdie.GAE(
-        abspath('venv/bin/google_appengine/dev_appserver.py'),
+        abspath('venv/bin/dev_appserver'),
         abspath('sample_apps/gae'),
         port=PORT,
         kill_orphans=True

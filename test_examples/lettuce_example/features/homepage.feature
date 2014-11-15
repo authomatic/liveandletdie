@@ -10,8 +10,8 @@ Feature: Visit homepage
 		Then I see "<text>"
 	
 	Examples:
-		| framework				| path				| subcommand									| text			|
-		| Flask					| flask/main.py		| 												| Home Flask	|
-		| GAE					| gae				| venv/bin/google_appengine/dev_appserver.py	| Home GAE		|
-		| Django				| django/example	| 												| Home Django	|
-		| WsgirefSimpleServer	| pyramid/main.py	| 												| Home Pyramid	|
+		| framework				| path				| subcommand				| text			|
+		| Flask					| flask/main.py		| 							| Home Flask	|
+		| GAE					| gae				| venv/bin/dev_appserver	| Home GAE		|
+		| Django				| django/example	| 							| Home Django	|
+		| WsgirefSimpleServer	| pyramid/main.py	| 							| Home Pyramid	|
