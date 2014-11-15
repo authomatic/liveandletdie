@@ -323,10 +323,6 @@ class Flask(WrapperBase):
         if host:
             app.config['DEBUG'] = False
             app.run(host=host, port=port)
-            
-            _log(self.enable_logging,
-                 'Flask live server running at {0}:{1} terminated!'
-                    .format(host, port))
             sys.exit()
     
 
@@ -378,10 +374,6 @@ class WsgirefSimpleServer(WrapperBase):
             s = make_server(host, port, app)
             s.serve_forever()
             s.server_close()
-            
-            _log(self.enable_logging,
-                'wsgiref.simple_server running at {0}:{1} terminated!'
-                    .format(host, port))
             sys.exit()
     
 
