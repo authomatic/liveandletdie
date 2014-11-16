@@ -357,14 +357,36 @@ class GAE(Base):
         return command
 
     def _kill_orphans(self):
-        process = subprocess.Popen('ps', stdout=subprocess.PIPE)
+        process = subprocess.Popen(['ps', 'auxww'], stdout=subprocess.PIPE)
         headers = process.stdout.readline()
         
         _log(self.enable_logging, 'Killing orphaned GAE processes:')
 
+	index_pid = headers.split().index('PID')
+
+	print ('headers', headers)
+	print headers.split()
+	print ('index_pid', index_pid)
+
         for row in process.stdout:
             if '_python_runtime.py' in row:
-                pid = row.split()[0]
+		print '?' * 50
+		print row
+	    
+            if 'google_appengine' in row and '_python_runtime.py' not in row:
+		pass
+		#import pdb; pdb.set_trace()		
+
+            #if 'google_appengine' in row:
+            if '_python_runtime.py' in row or 'dev_appserver.py' in row:
+                print '@' * 50
+		print row
+		print len(row)
+	        print row.split()
+	        print row.split()[index_pid]
+		
+
+                pid = row.split()[index_pid]
                 kill_process(pid, self.enable_logging)
 
 
