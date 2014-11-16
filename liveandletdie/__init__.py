@@ -278,7 +278,11 @@ class Base(object):
                         self.process.pid,
                         self.url))
 
-        port_in_use(self.port, kill=True)
+        while port_in_use(self.port, kill=True):
+            _log(self.enable_logging,
+                 'Process {1} is still alive, killing again.'
+                 .format(self.process.pid))
+
         if self.process:
             self.process.kill()
             self.process.wait()

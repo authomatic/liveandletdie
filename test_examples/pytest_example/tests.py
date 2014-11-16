@@ -33,7 +33,8 @@ APPS = {
         abspath('venv/bin/dev_appserver'),
         abspath('sample_apps/gae'),
         port=PORT,
-        kill_orphans=True
+        kill_orphans=True,
+        enable_logging=True
     ),
     'Django': liveandletdie.Django(
         abspath('sample_apps/django/example'),
