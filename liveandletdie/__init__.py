@@ -343,6 +343,7 @@ class GAE(Base):
             '--host={0}'.format(self.host),
             '--port={0}'.format(self.port),
             '--admin_port={0}'.format(self.admin_port),
+            '--skip_sdk_update_check=yes',
             self.path
         ]
 
