@@ -277,11 +277,11 @@ class Base(object):
                 .format(self.__class__.__name__,
                         self.process.pid,
                         self.url))
-        
+
+        port_in_use(self.port, kill=True)
         if self.process:
             self.process.kill()
             self.process.wait()
-            port_in_use(self.port, kill=True)
 
         if self.kill_orphans:
             self._kill_orphans()
