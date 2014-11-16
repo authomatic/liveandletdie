@@ -158,7 +158,7 @@ def port_in_use(port, kill=False, enable_logging=False):
 
 def kill_process(pid, enable_logging=False):
     try:
-        _log(enable_logging, 'Killing process with id {0}!'.format(pid))
+        _log(enable_logging, 'Killing process {0}!'.format(pid))
         os.kill(int(pid), signal.SIGKILL)
         return 
     except OSError:
@@ -335,6 +335,9 @@ class GAE(Base):
     
     The first argument must be the path to dev_appserver.py.
     """
+
+    _ORPHANS_PATTERN = re.compile(r'.*python.*(_python_runtime|dev_appserver)'
+                                  r'\.pyc?')
     
     def __init__(self, dev_appserver_path, *args, **kwargs):
         super(GAE, self).__init__(*args, **kwargs)
@@ -358,35 +361,12 @@ class GAE(Base):
 
     def _kill_orphans(self):
         process = subprocess.Popen(['ps', 'auxww'], stdout=subprocess.PIPE)
-        headers = process.stdout.readline()
+        pid_column_idx = process.stdout.readline().split().index('PID')
         
         _log(self.enable_logging, 'Killing orphaned GAE processes:')
-
-	index_pid = headers.split().index('PID')
-
-	print ('headers', headers)
-	print headers.split()
-	print ('index_pid', index_pid)
-
         for row in process.stdout:
-            if '_python_runtime.py' in row:
-		print '?' * 50
-		print row
-	    
-            if 'google_appengine' in row and '_python_runtime.py' not in row:
-		pass
-		#import pdb; pdb.set_trace()		
-
-            #if 'google_appengine' in row:
-            if '_python_runtime.py' in row or 'dev_appserver.py' in row:
-                print '@' * 50
-		print row
-		print len(row)
-	        print row.split()
-	        print row.split()[index_pid]
-		
-
-                pid = row.split()[index_pid]
+            if self._ORPHANS_PATTERN.match(row):
+                pid = row.split()[pid_column_idx]
                 kill_process(pid, self.enable_logging)
 
 
