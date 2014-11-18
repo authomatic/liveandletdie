@@ -1,3 +1,4 @@
+export PYTHONPATH=$PYTHONPATH:pwd
 MAGENTA=$(tput setaf 5)
 NORMAL=$(tput sgr0)
 
