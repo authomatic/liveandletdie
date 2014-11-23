@@ -1,6 +1,8 @@
 ==========================================
 Live and Let Die (former Test Live Server)
 ==========================================
+.. image:: https://travis-ci.org/touilleMan/liveandletdie.svg
+    :target: https://travis-ci.org/touilleMan/liveandletdie
 
 **Live and Let Die** (former Test Live Server) is a simple package to simplify launching and
 terminating of web development servers from **BDD** or **functional** tests.
