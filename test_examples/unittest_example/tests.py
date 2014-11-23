@@ -16,10 +16,7 @@ def abspath(pth):
 PORT = 8001
 
 
-class Base(unittest.TestCase):
-    EXPECTED_TEXT = None
-    app = None
-    
+def test_decorator(cls):
     @classmethod
     def setUpClass(cls):
         try:
@@ -27,7 +24,8 @@ class Base(unittest.TestCase):
             cls.app.live(kill=True)
         except Exception as e:
             # Skip test if not started.
-            raise unittest.SkipTest(e.message)
+            # raise unittest.SkipTest(e.message)
+            raise e
         
         # Start browser.
         cls.browser = webdriver.Firefox()
@@ -47,23 +45,32 @@ class Base(unittest.TestCase):
         page_text = self.browser.find_element_by_tag_name('body').text
         self.assertIn(self.EXPECTED_TEXT, page_text)
 
+    cls.setUpClass = setUpClass
+    cls.tearDownClass = tearDownClass
+    cls.test_visit_start_page = test_visit_start_page
+    return cls
 
-class TestFlask(Base):
+
+@test_decorator
+class TestFlask(unittest.TestCase):
     EXPECTED_TEXT = 'Home Flask'
     app = liveandletdie.Flask(abspath('sample_apps/flask/main.py'), port=PORT)
 
 
-class TestPyramid(Base):
+@test_decorator
+class TestPyramid(unittest.TestCase):
     EXPECTED_TEXT = 'Home Pyramid'
     app = liveandletdie.WsgirefSimpleServer(abspath('sample_apps/pyramid/main.py'), port=PORT)
 
 
-class TestDjango(Base):
+@test_decorator
+class TestDjango(unittest.TestCase):
     EXPECTED_TEXT = 'Home Django'
     app = liveandletdie.Django(abspath('sample_apps/django/example'), port=PORT)
 
 
-class TestGAE(Base):
+@test_decorator
+class TestGAE(unittest.TestCase):
     EXPECTED_TEXT = 'Home GAE'
     app = liveandletdie.GAE(abspath('venv/bin/dev_appserver'),
                   abspath('sample_apps/gae'), port=PORT, kill_orphans=True)
