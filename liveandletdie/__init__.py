@@ -353,14 +353,15 @@ class GAE(Base):
         return command
 
     def _kill_orphans(self):
-        process = subprocess.Popen('ps', stdout=subprocess.PIPE)
-        headers = process.stdout.readline()
+        process = subprocess.Popen(['ps', '-f'], stdout=subprocess.PIPE)
+        headers = process.stdout.readline().split()
+        pid_index = headers.index('PID')
         
         _log(self.enable_logging, 'Killing orphaned GAE processes:')
 
         for row in process.stdout:
             if '_python_runtime.py' in row:
-                pid = row.split()[0]
+                pid = row.split()[pid_index]
                 kill_process(pid, self.enable_logging)
 
 
