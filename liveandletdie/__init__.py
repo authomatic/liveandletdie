@@ -106,13 +106,7 @@ def port_in_use(port, kill=False, enable_logging=False):
         The process id as :class:`int` if in use, otherwise ``False`` .
     """
 
-    command_template = 'lsof -i :{0}'
-
-    # If OSX
-    if platform.platform().lower().startswith('darwin'):
-        # https://stackoverflow.com/questions/4421633/who-is-listening-on-a-given-tcp-port-on-mac-os-x/4421674#4421674
-        command_template = 'lsof -iTCP:{0} -sTCP:LISTEN'
-
+    command_template = 'lsof -iTCP:{0} -sTCP:LISTEN'
     process = subprocess.Popen(command_template.format(port).split(),
                                stdout=subprocess.PIPE)
     headers = process.stdout.readline().split()
