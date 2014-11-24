@@ -24,8 +24,7 @@ def test_decorator(cls):
             cls.app.live(kill=True)
         except Exception as e:
             # Skip test if not started.
-            # raise unittest.SkipTest(e.message)
-            raise e
+            raise unittest.SkipTest(e.message)
         
         # Start browser.
         cls.browser = webdriver.Firefox()
