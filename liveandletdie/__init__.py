@@ -6,8 +6,7 @@ import re
 import signal
 import subprocess
 import sys
-import urllib2
-
+from six.moves import urllib
 
 _VALID_HOST_PATTERN = r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}([:]\d+)?$'
 
@@ -109,7 +108,7 @@ def port_in_use(port, kill=False, enable_logging=False):
     command_template = 'lsof -iTCP:{0} -sTCP:LISTEN'
     process = subprocess.Popen(command_template.format(port).split(),
                                stdout=subprocess.PIPE)
-    headers = process.stdout.readline().split()
+    headers = process.stdout.readline().decode().split()
     
     if not 'PID' in headers:
         _log(enable_logging, 'Port {0} is free.'.format(port))
@@ -118,7 +117,7 @@ def port_in_use(port, kill=False, enable_logging=False):
     index_pid = headers.index('PID')
     index_cmd = headers.index('COMMAND')
     
-    row = process.stdout.readline().split()
+    row = process.stdout.readline().decode().split()
     if len(row) < index_pid:
         return False
     
@@ -214,8 +213,8 @@ class Base(object):
         
         while not response:
             try:
-                response = urllib2.urlopen(self.url)
-            except urllib2.URLError:
+                response = urllib.request.urlopen(self.url)
+            except urllib.error.URLError:
                 if sleeped > self.timeout:
                     raise Exception('{0} server {1} didn\'t start in '
                                     'specified timeout {2} seconds!'
@@ -343,7 +342,6 @@ class GAE(Base):
 
         if self.dev_appserver_path.endswith(('.py', '.pyc')):
             command = [self.executable] + command
-
         return command
 
     def _kill_orphans(self):

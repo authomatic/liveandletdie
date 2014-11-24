@@ -1,4 +1,5 @@
-from os import path
+from os import path, environ
+import six
 
 import liveandletdie
 from selenium import webdriver
@@ -67,11 +68,11 @@ class TestDjango(unittest.TestCase):
     EXPECTED_TEXT = 'Home Django'
     app = liveandletdie.Django(abspath('sample_apps/django/example'), port=PORT)
 
-
+@unittest.skipIf(six.PY3, "GAE not implemented for Py3k")
 @test_decorator
 class TestGAE(unittest.TestCase):
     EXPECTED_TEXT = 'Home GAE'
-    app = liveandletdie.GAE(abspath('venv/bin/dev_appserver'),
+    app = liveandletdie.GAE(environ['VIRTUAL_ENV'] + '/bin/dev_appserver',
                   abspath('sample_apps/gae'), port=PORT, kill_orphans=True)
 
 
