@@ -6,7 +6,7 @@ python:
   - "3.4"
 install:
  - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then export REQUIREMENTS=requirements2.txt; else export REQUIREMENTS=requirements3.txt; fi
- - pip install -r $REQUIREMENTS.txt
+ - pip install -r $REQUIREMENTS
 before_script:
  - export DISPLAY=:99.0
  - sh -e /etc/init.d/xvfb start
