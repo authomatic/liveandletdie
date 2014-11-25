@@ -7,6 +7,7 @@ import signal
 import subprocess
 import sys
 import urllib2
+import urlparse
 
 
 _VALID_HOST_PATTERN = r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}([:]\d+)?$'
@@ -38,32 +39,6 @@ def split_host(host):
     
     host, port = (host.split(':') + [None])[:2]
     return host, int(port)
-
-
-def parse_args(enable_logging=False):
-    """
-    Parses command line arguments.
-    
-    Looks for --liveandletdie [host]
-    
-    :returns:
-        A ``(str(host), int(port))`` or ``(None, None)`` tuple.
-    """
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--liveandletdie',
-                        help='Run as test live server.',
-                        type=_validate_host,
-                        nargs='?',
-                        const='170.0.0.1:5000')
-    args = parser.parse_args()
-        
-    if args.liveandletdie:
-        _log(enable_logging, 'Running as test live server at {0}'
-             .format(args.liveandletdie))
-        return split_host(args.liveandletdie)
-    else:
-        return (None, None)
 
 
 def check(server):
@@ -189,18 +164,19 @@ class Base(object):
     :param float timeout:
         Timeout in seconds for the check.
     
-    :url:
+    :check_url:
         URL where to check whether the server is running.
-        Default is "http://{host}".
+        Default is "http://{host}:{port}".
     """
+
+    _argument_parser = argparse.ArgumentParser()
     
     def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0,
-                 url=None, executable='python', enable_logging=False, suppress_output=True,
-                 kill_orphans=False):
+                 check_url=None, executable='python', enable_logging=False,
+                 suppress_output=True, kill_orphans=False, **kwargs):
         
         self.path = path
         self.timeout = timeout
-        self.url = url or 'http://{0}:{1}'.format(host, port)
         self.host = host
         self.port = port
         self.process = None
@@ -208,31 +184,48 @@ class Base(object):
         self.enable_logging = enable_logging
         self.suppress_output = suppress_output
         self.kill_orphans = kill_orphans
-    
-    
-    def check(self):
+        self.check_url = 'http://{0}:{1}'.format(host, port)
+
+        if check_url:
+            self.check_url = self._normalize_check_url(check_url)
+
+    def _normalize_check_url(self, check_url):
+        """
+        Normalizes check_url by:
+
+        * Adding the `http` scheme if missing
+        * Adding or replacing port with `self.port`
+        """
+        split_url = urlparse.urlsplit(check_url)
+        host = urllib2.splitport(split_url.path or split_url.netloc)[0]
+        scheme = split_url.scheme or 'http'
+        return '{0}://{1}:{2}'.format(scheme, host, self.port)
+
+    def check(self, check_url=None):
         """Checks whether a server is running."""
-        
+
+        if check_url is not None:
+            self.check_url = self._normalize_check_url(check_url)
+
         response = None
         sleeped = 0.0
-        
         t = datetime.now()
         
         while not response:
             try:
-                response = urllib2.urlopen(self.url)
+                response = urllib2.urlopen(self.check_url)
             except urllib2.URLError:
                 if sleeped > self.timeout:
                     raise Exception('{0} server {1} didn\'t start in '
                                     'specified timeout {2} seconds!'
-                                    .format(self.__class__.__name__, self.url,
+                                    .format(self.__class__.__name__,
+                                            self.check_url,
                                             self.timeout))
                 sleeped = _get_total_seconds(datetime.now() - t)
         
         return _get_total_seconds(datetime.now() - t)
-    
-    
-    def live(self, kill=False):
+
+    def live(self, kill=False, check_url=None):
         """
         Starts a live server in a separate process
         and checks whether it is running.
@@ -255,28 +248,20 @@ class Base(object):
 
             _log(self.enable_logging, 'Starting process PID: {0}'
                  .format(self.process.pid))
-            duration = self.check()
+            duration = self.check(check_url)
             _log(self.enable_logging,
                  'Live server started in {0} seconds. PID: {1}'
                  .format(duration, self.process.pid))
             return self.process
         else:
             raise Exception('{0} is not a valid host!'.format(host))
-    
-    
+
     def start(self, *args, **kwargs):
         """Alias for :meth:`.live`"""
         self.live(*args, **kwargs)
 
-
     def die(self):
         """Stops the server if it is running."""
-
-        _log(self.enable_logging,
-            'Stopping {0} server with PID: {1} running at {2}.'
-                .format(self.__class__.__name__,
-                        self.process.pid,
-                        self.url))
 
         while port_in_use(self.port, kill=True):
             _log(self.enable_logging,
@@ -284,20 +269,51 @@ class Base(object):
                  .format(self.process.pid))
 
         if self.process:
+            _log(self.enable_logging,
+                 'Stopping {0} server with PID: {1} running at {2}.'
+                     .format(self.__class__.__name__, self.process.pid,
+                             self.check_url))
             self.process.kill()
             self.process.wait()
 
         if self.kill_orphans:
             self._kill_orphans()
 
-
     def stop(self, *args, **kwargs):
         """Alias for :meth:`.die`"""
         self.die(*args, **kwargs)
 
-
     def _kill_orphans(self):
         pass
+
+    @classmethod
+    def _add_args(cls):
+        cls._argument_parser.add_argument('--liveandletdie',
+                                          help='Run as test live server.',
+                                          type=_validate_host,
+                                          nargs='?',
+                                          const='170.0.0.1:5000')
+
+    @classmethod
+    def parse_args(cls, enable_logging=False):
+        """
+        Parses command line arguments.
+
+        Looks for --liveandletdie [host]
+
+        :returns:
+            A ``(str(host), int(port))`` or ``(None, None)`` tuple.
+        """
+
+        cls._add_args()
+        args = cls._argument_parser.parse_args()
+
+        if args.liveandletdie:
+            _log(enable_logging, 'Running as test live server at {0}'
+                 .format(args.liveandletdie))
+            return split_host(args.liveandletdie)
+        else:
+            return (None, None)
 
 
 class WrapperBase(Base):
@@ -313,9 +329,37 @@ class WrapperBase(Base):
 
 
 class Flask(WrapperBase):
-    
-    @staticmethod
-    def wrap(app):
+
+    def __init__(self, *args, **kwargs):
+        self.ssl = kwargs.pop('ssl', None)
+        super(Flask, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def _add_args(cls):
+        super(Flask, cls)._add_args()
+        cls._argument_parser.add_argument('--ssl',
+                                          help='Run with "adhoc" ssl context.',
+                                          type=bool,
+                                          nargs='?',
+                                          default=False)
+
+    def create_command(self):
+        command = super(Flask, self).create_command()
+        if self.ssl is True:
+            command += ['--ssl=1']
+        return command
+
+    def check(self, check_url=None):
+        url = self.check_url if check_url is None else \
+            self._normalize_check_url(check_url)
+
+        if self.ssl:
+            url = url.replace('http://', 'https://')
+
+        super(Flask, self).check(url)
+
+    @classmethod
+    def wrap(cls, app):
         """
         Adds test live server capability to a Flask app module.
         
@@ -323,10 +367,13 @@ class Flask(WrapperBase):
             A :class:`flask.Flask` app instance.
         """
         
-        host, port = parse_args()
+        host, port = cls.parse_args()
+        ssl = cls._argument_parser.parse_args().ssl
+
         if host:
             app.config['DEBUG'] = False
-            app.run(host=host, port=port)
+            ssl_context = 'adhoc' if ssl else None
+            app.run(host=host, port=port, ssl_context=ssl_context)
             sys.exit()
     
 
@@ -372,9 +419,9 @@ class GAE(Base):
 
 class WsgirefSimpleServer(WrapperBase):
     
-    @staticmethod
-    def wrap(app):
-        host, port = parse_args()
+    @classmethod
+    def wrap(cls, app):
+        host, port = cls.parse_args()
         if host:            
             from wsgiref.simple_server import make_server
             

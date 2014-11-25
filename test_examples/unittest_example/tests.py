@@ -43,7 +43,7 @@ class Base(unittest.TestCase):
             cls.browser.quit()
     
     def test_visit_start_page(self):
-        self.browser.get(self.app.url)
+        self.browser.get(self.app.check_url)
         page_text = self.browser.find_element_by_tag_name('body').text
         self.assertIn(self.EXPECTED_TEXT, page_text)
 
@@ -51,6 +51,12 @@ class Base(unittest.TestCase):
 class TestFlask(Base):
     EXPECTED_TEXT = 'Home Flask'
     app = liveandletdie.Flask(abspath('sample_apps/flask/main.py'), port=PORT)
+
+
+class TestFlaskSSL(Base):
+    EXPECTED_TEXT = 'Home Flask SSL'
+    app = liveandletdie.Flask(abspath('sample_apps/flask/main.py'), port=PORT,
+                              ssl=True)
 
 
 class TestPyramid(Base):

@@ -29,12 +29,16 @@ APPS = {
         abspath('sample_apps/flask/main.py'),
         port=PORT
     ),
+    'Flask SSL': liveandletdie.Flask(
+        abspath('sample_apps/flask/main.py'),
+        port=PORT,
+        ssl=True,
+    ),
     'GAE': liveandletdie.GAE(
         abspath('venv/bin/dev_appserver'),
         abspath('sample_apps/gae'),
         port=PORT,
-        kill_orphans=True,
-        enable_logging=True
+        kill_orphans=True
     ),
     'Django': liveandletdie.Django(
         abspath('sample_apps/django/example'),
@@ -71,8 +75,7 @@ def browser(request):
 
 def test_home(browser, app):
     """Andy visits a webpage and sees "Home"."""
-        
-    browser.get(app.url)    
+    browser.get(app.check_url)
     page_text = browser.find_element_by_tag_name('body').text    
     assert 'Home {0}'.format(app.name) in page_text
 

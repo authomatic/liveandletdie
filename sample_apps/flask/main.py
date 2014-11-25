@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 
 DEBUG = True
 SECRET_KEY = 'development key'
@@ -10,7 +10,12 @@ app.config.from_object(__name__)
 
 @app.route('/')
 def home():
-    return 'Home Flask'
+    content = 'Home Flask'
+    if request.url.startswith('https://'):
+        content += ' SSL'
+
+    return content
+
 
 if __name__ == '__main__':
     
