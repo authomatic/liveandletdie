@@ -1,6 +1,10 @@
 from setuptools import setup,find_packages
+import os
+
 
 NAME = 'liveandletdie'
+HERE = os.path.dirname(__file__)
+
 
 setup(
     name=NAME,
@@ -11,7 +15,7 @@ setup(
     author_email='peterhudec@peterhudec.com',
     description='Simplifies launching and terminating of web development '
         'servers from BDD and functional tests.',
-    long_description=open('README.rst').read(),
+    long_description=open(os.path.join(HERE, 'README.rst')).read(),
     keywords='Flask, Pyramid, Django, Google App Engine, GAE, BDD, TDD, '
         'functional testing, live server',
     url='http://github.com/peterhudec/{0}'.format(NAME),
