@@ -185,9 +185,14 @@ class Base(object):
         self.suppress_output = suppress_output
         self.kill_orphans = kill_orphans
         self.check_url = 'http://{0}:{1}'.format(host, port)
+        self.scheme = 'http'
 
         if check_url:
             self.check_url = self._normalize_check_url(check_url)
+
+    @property
+    def default_url(self):
+        return '{0}://{1}:{2}'.format(self.scheme, self.host, self.port)
 
     def _normalize_check_url(self, check_url):
         """
@@ -196,10 +201,11 @@ class Base(object):
         * Adding the `http` scheme if missing
         * Adding or replacing port with `self.port`
         """
+
+        # TODO: Write tests for this method
         split_url = urlparse.urlsplit(check_url)
         host = urllib2.splitport(split_url.path or split_url.netloc)[0]
-        scheme = split_url.scheme or 'http'
-        return '{0}://{1}:{2}'.format(scheme, host, self.port)
+        return '{0}://{1}:{2}'.format(self.scheme, host, self.port)
 
     def check(self, check_url=None):
         """Checks whether a server is running."""
@@ -333,6 +339,8 @@ class Flask(WrapperBase):
     def __init__(self, *args, **kwargs):
         self.ssl = kwargs.pop('ssl', None)
         super(Flask, self).__init__(*args, **kwargs)
+        if self.ssl:
+            self.scheme = 'https'
 
     @classmethod
     def _add_args(cls):
@@ -371,7 +379,7 @@ class Flask(WrapperBase):
         ssl = cls._argument_parser.parse_args().ssl
 
         if host:
-            app.config['DEBUG'] = False
+            # app.config['DEBUG'] = False
             ssl_context = 'adhoc' if ssl else None
             app.run(host=host, port=port, ssl_context=ssl_context)
             sys.exit()
