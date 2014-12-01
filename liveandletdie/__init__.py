@@ -13,6 +13,10 @@ import urlparse
 _VALID_HOST_PATTERN = r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}([:]\d+)?$'
 
 
+class LiveAndLetDieError(BaseException):
+    pass
+
+
 def _log(enable_logging, message):
     if enable_logging:
         print('LIVEANDLETDIE: {0}'.format(message))
@@ -186,7 +190,6 @@ class Base(object):
         self.kill_orphans = kill_orphans
         self.check_url = 'http://{0}:{1}'.format(host, port)
         self.scheme = 'http'
-
         if check_url:
             self.check_url = self._normalize_check_url(check_url)
 
@@ -222,11 +225,19 @@ class Base(object):
                 response = urllib2.urlopen(self.check_url)
             except urllib2.URLError:
                 if sleeped > self.timeout:
-                    raise Exception('{0} server {1} didn\'t start in '
-                                    'specified timeout {2} seconds!'
-                                    .format(self.__class__.__name__,
-                                            self.check_url,
-                                            self.timeout))
+                    exitcode = self.process.wait()
+                    raise LiveAndDieError(
+                        '{0} server {1} didn\'t start in specified timeout {2} '
+                        'seconds!\ncommand: {3}\nexit status: {4}\n'
+                        'Captured stderr:\n{5}'.format(
+                            self.__class__.__name__,
+                            self.check_url,
+                            self.timeout,
+                            ' '.join(self.create_command()),
+                            exitcode,
+                            self.process.communicate()[1]
+                        )
+                    )
                 sleeped = _get_total_seconds(datetime.now() - t)
         
         return _get_total_seconds(datetime.now() - t)
@@ -246,11 +257,12 @@ class Base(object):
         host = str(self.host)
         if re.match(_VALID_HOST_PATTERN, host):
             if self.suppress_output:
-                with open(os.devnull, "w") as output:
-                    self.process = subprocess.Popen(self.create_command(),
-                        stdout=output, stderr=output)
+                self.process = subprocess.Popen(self.create_command(),
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.PIPE)
             else:
-                self.process = subprocess.Popen(self.create_command())
+                self.process = subprocess.Popen(self.create_command(),
+                                                stderr=subprocess.PIPE)
 
             _log(self.enable_logging, 'Starting process PID: {0}'
                  .format(self.process.pid))
@@ -374,12 +386,11 @@ class Flask(WrapperBase):
         :param app:
             A :class:`flask.Flask` app instance.
         """
-        
+
         host, port = cls.parse_args()
         ssl = cls._argument_parser.parse_args().ssl
 
         if host:
-            # app.config['DEBUG'] = False
             ssl_context = 'adhoc' if ssl else None
             app.run(host=host, port=port, ssl_context=ssl_context)
             sys.exit()
