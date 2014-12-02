@@ -210,10 +210,11 @@ class Base(object):
         return '{0}://{1}:{2}'.format(self.scheme, self.host, self.port)
 
     def _kill(self):
-        try:
-            os.killpg(self.process.pid, signal.SIGKILL)
-        except OSError:
-            self.process.kill()
+        if self.process:
+            try:
+                os.killpg(self.process.pid, signal.SIGKILL)
+            except OSError:
+                self.process.kill()
 
     def _normalize_check_url(self, check_url):
         """
