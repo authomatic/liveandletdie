@@ -233,7 +233,7 @@ class Base(object):
                 if sleeped > self.timeout:
                     self._kill()
                     exitcode = self.process.wait()
-                    raise LiveAndDieError(
+                    raise LiveAndLetDieError(
                         '{0} server {1} didn\'t start in specified timeout {2} '
                         'seconds!\ncommand: {3}\nexit status: {4}\n'
                         'Captured stderr:\n{5}'.format(
@@ -283,7 +283,7 @@ class Base(object):
                  .format(duration, self.process.pid))
             return self.process
         else:
-            raise Exception('{0} is not a valid host!'.format(host))
+            raise LiveAndLetDieError('{0} is not a valid host!'.format(host))
 
     def start(self, *args, **kwargs):
         """Alias for :meth:`.live`"""
