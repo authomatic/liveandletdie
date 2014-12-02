@@ -1,3 +1,12 @@
+Version 0.0.3
+-------------
+
+* The :class:`livenandletdie.GAE` is now more stable.
+* Added ssl support for :class:`livenandletdie.Flask`.
+* Better error handling.
+* Renamed the ``enable_logging`` parameter of constructors to ``logging``.
+* Renamed the ``kill`` parameter of the ``die()`` method to ``kill_port``.
+
 Version 0.0.2
 -------------
 
