@@ -130,7 +130,7 @@ The interface is the same for all of the supported frameworks.
 
     # Start the app.
     # If kill_port is True,
-    # it will kill any Python process listening on port 5555
+    # it will kill any process listening on port 5555
     process = app.live(kill_port=True)
 
     # You can check whether it is running
