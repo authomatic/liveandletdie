@@ -8,7 +8,7 @@ HERE = os.path.dirname(__file__)
 
 setup(
     name=NAME,
-    version='0.0.2',
+    version='0.0.3',
     packages=find_packages(),
     package_data={'': ['*.txt', '*.rst']},
     author='Peter Hudec',
