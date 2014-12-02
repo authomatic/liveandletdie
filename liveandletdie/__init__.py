@@ -317,12 +317,6 @@ class Base(object):
 
     def die(self):
         """Stops the server if it is running."""
-
-        while port_in_use(self.port, kill=True):
-            _log(self.logging,
-                 'Process {1} is still alive, killing again.'
-                 .format(self.process.pid))
-
         if self.process:
             _log(self.logging,
                  'Stopping {0} server with PID: {1} running at {2}.'
