@@ -413,6 +413,18 @@ class Flask(WrapperBase):
                         '{0}.{1}/Extras/lib/python/'
                         .format(sys.version_info.major, sys.version_info.minor)
                     )
+
+                try:
+                    import OpenSSL
+                except ImportError:
+                    # Linux fix
+                    sys.path.append(
+                        '/usr/lib/python{0}.{1}/dist-packages/'
+                        .format(sys.version_info.major, sys.version_info.minor)
+                    )
+
+                try:
+                    import OpenSSL
                 except ImportError:
                     raise LiveAndLetDieError(
                         'Flask app could not be launched because the pyopenssl '
