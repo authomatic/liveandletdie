@@ -47,12 +47,14 @@ def split_host(host):
 
 def check(server):
     """Checks whether a server is running."""
-    
     return server.check()
 
 
 def live(app):
-    """Starts a live app in a separate process and checks whether it is running."""
+    """
+    Starts a live app in a separate process
+    and checks whether it is running.
+    """
     return app.live()
 
 
@@ -62,7 +64,10 @@ def start(*args, **kwargs):
 
 
 def die(app):
-    """Starts a live app in a separate process and checks whether it is running."""
+    """
+    Starts a live app in a separate process
+    and checks whether it is running.
+    """
     return app.live()
 
 
@@ -92,17 +97,18 @@ def port_in_use(port, kill=False, enable_logging=False):
         # https://stackoverflow.com/questions/4421633/who-is-listening-on-a-given-tcp-port-on-mac-os-x/4421674#4421674
         command_template = 'lsof -iTCP:{0} -sTCP:LISTEN'
 
-    process = subprocess.Popen(command_template.format(port).split(),
-                               stdout=subprocess.PIPE)
+    process = subprocess.Popen(
+        command_template.format(port).split(),
+        stdout=subprocess.PIPE
+    )
     headers = process.stdout.readline().split()
     
-    if not 'PID' in headers:
+    if 'PID' not in headers:
         _log(enable_logging, 'Port {0} is free.'.format(port))
         return False
     
     index_pid = headers.index('PID')
     index_cmd = headers.index('COMMAND')
-    
     row = process.stdout.readline().split()
     if len(row) < index_pid:
         return False
@@ -111,22 +117,23 @@ def port_in_use(port, kill=False, enable_logging=False):
     command = row[index_cmd]
     
     if pid and command.startswith('python'):
-        _log(enable_logging,
-            'Port {0} is already being used by process {1}!'.format(port, pid))
+        _log(enable_logging, 'Port {0} is already being used by process {1}!'
+             .format(port, pid))
     
         if kill:
             _log(enable_logging,
-                'Killing process with id {0} listening on port {1}!'
-                    .format(pid, port))
+                 'Killing process with id {0} listening on port {1}!'
+                 .format(pid, port))
             os.kill(pid, signal.SIGKILL)
-            
+
             # Check whether it was really killed.
             try:
                 # If still alive
                 kill_process(pid, enable_logging)
                 # call me again
                 _log(enable_logging,
-                    'Process {0} is still alive! checking again...'.format(pid))
+                     'Process {0} is still alive! checking again...'
+                     .format(pid))
                 return port_in_use(port, kill)
             except OSError:
                 # If killed
@@ -151,8 +158,8 @@ def _get_total_seconds(td):
     method in Python 2.6
     """
 
-    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6)\
-           / 10**6
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) \
+        / 10 ** 6
 
 
 class Base(object):
@@ -168,9 +175,15 @@ class Base(object):
     :param float timeout:
         Timeout in seconds for the check.
     
-    :check_url:
+    :param str check_url:
         URL where to check whether the server is running.
-        Default is "http://{host}:{port}".
+        Default is ``"http://{host}:{port}"``.
+
+    :param bool enable_logging:
+        Whether liveandletdie logs should be printed out.
+
+    :param bool suppress_output:
+        Whether the stdout of the launched application should be suppressed.
     """
 
     _argument_parser = argparse.ArgumentParser()
@@ -216,7 +229,13 @@ class Base(object):
         return '{0}://{1}:{2}'.format(self.scheme, host, self.port)
 
     def check(self, check_url=None):
-        """Checks whether a server is running."""
+        """
+        Checks whether a server is running.
+
+        :param str check_url:
+            URL where to check whether the server is running.
+            Default is ``"http://{self.host}:{self.port}"``.
+        """
 
         if check_url is not None:
             self.check_url = self._normalize_check_url(check_url)
@@ -252,6 +271,14 @@ class Base(object):
         """
         Starts a live server in a separate process
         and checks whether it is running.
+
+        :param bool kill:
+            If ``True``, processes running on the same port as ``self.port``
+            will be killed.
+
+        :param str check_url:
+            URL where to check whether the server is running.
+            Default is ``"http://{self.host}:{self.port}"``.
         """
         
         pid = port_in_use(self.port, kill)
@@ -351,8 +378,12 @@ class WrapperBase(Base):
 
 
 class Flask(WrapperBase):
-
     def __init__(self, *args, **kwargs):
+        """
+        :param bool ssl:
+            If true, the app will be run with ``ssl_context="adhoc"`` and the
+            schema of the ``self.check_url`` will be ``"https"``.
+        """
         self.ssl = kwargs.pop('ssl', None)
         super(Flask, self).__init__(*args, **kwargs)
         if self.ssl:
@@ -430,12 +461,12 @@ class Flask(WrapperBase):
     
 
 class GAE(Base):
-    """
-    
-    The first argument must be the path to dev_appserver.py.
-    """
-    
     def __init__(self, dev_appserver_path, *args, **kwargs):
+        """
+        :param str dev_appserver:
+            Path to dev_appserver.py
+
+        """
         super(GAE, self).__init__(*args, **kwargs)
         self.dev_appserver_path = dev_appserver_path
         self.admin_port = kwargs.get('admin_port', 5555)
@@ -457,7 +488,6 @@ class GAE(Base):
 
 
 class WsgirefSimpleServer(WrapperBase):
-    
     @classmethod
     def wrap(cls, app):
         host, port = cls.parse_args()
