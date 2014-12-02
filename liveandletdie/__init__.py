@@ -246,7 +246,7 @@ class Base(object):
                         )
                     )
                 sleeped = _get_total_seconds(datetime.now() - t)
-        
+
         return _get_total_seconds(datetime.now() - t)
 
     def live(self, kill=False, check_url=None):
