@@ -20,8 +20,7 @@ def when_i_launch_that_application_wit_the_subcommand_subcommand(step, dev_appse
     if dev_appserver_path:
         world.app = world.AppClass(dev_appserver_path,
                                    world.path,
-                                   port=port,
-                                   kill_orphans=True)
+                                   port=port)
     else:
         world.app = world.AppClass(world.path, port=port, ssl=world.ssl)
 

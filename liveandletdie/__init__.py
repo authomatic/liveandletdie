@@ -177,7 +177,7 @@ class Base(object):
     
     def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0,
                  check_url=None, executable='python', enable_logging=False,
-                 suppress_output=True, kill_orphans=False, **kwargs):
+                 suppress_output=True, **kwargs):
         
         self.path = path
         self.timeout = timeout
@@ -187,7 +187,6 @@ class Base(object):
         self.executable = executable
         self.enable_logging = enable_logging
         self.suppress_output = suppress_output
-        self.kill_orphans = kill_orphans
         self.check_url = 'http://{0}:{1}'.format(host, port)
         self.scheme = 'http'
         if check_url:
@@ -305,15 +304,9 @@ class Base(object):
 
             self._kill()
 
-        if self.kill_orphans:
-            self._kill_orphans()
-
     def stop(self, *args, **kwargs):
         """Alias for :meth:`.die`"""
         self.die(*args, **kwargs)
-
-    def _kill_orphans(self):
-        pass
 
     @classmethod
     def _add_args(cls):
@@ -441,9 +434,6 @@ class GAE(Base):
     
     The first argument must be the path to dev_appserver.py.
     """
-
-    _ORPHANS_PATTERN = re.compile(r'.*python.*(_python_runtime|dev_appserver)'
-                                  r'\.pyc?')
     
     def __init__(self, dev_appserver_path, *args, **kwargs):
         super(GAE, self).__init__(*args, **kwargs)
@@ -464,16 +454,6 @@ class GAE(Base):
             command = [self.executable] + command
 
         return command
-
-    def _kill_orphans(self):
-        process = subprocess.Popen(['ps', 'auxww'], stdout=subprocess.PIPE)
-        pid_column_idx = process.stdout.readline().split().index('PID')
-        
-        _log(self.enable_logging, 'Killing orphaned GAE processes:')
-        for row in process.stdout:
-            if self._ORPHANS_PATTERN.match(row):
-                pid = row.split()[pid_column_idx]
-                kill_process(pid, self.enable_logging)
 
 
 class WsgirefSimpleServer(WrapperBase):

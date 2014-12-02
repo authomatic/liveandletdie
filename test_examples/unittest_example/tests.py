@@ -72,7 +72,7 @@ class TestDjango(Base):
 class TestGAE(Base):
     EXPECTED_TEXT = 'Home GAE'
     app = liveandletdie.GAE(abspath('venv/bin/dev_appserver'),
-                  abspath('sample_apps/gae'), port=PORT, kill_orphans=True)
+                  abspath('sample_apps/gae'), port=PORT)
 
 
 if __name__ == '__main__':
