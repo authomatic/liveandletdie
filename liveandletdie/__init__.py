@@ -197,6 +197,12 @@ class Base(object):
     def default_url(self):
         return '{0}://{1}:{2}'.format(self.scheme, self.host, self.port)
 
+    def _kill(self):
+        try:
+            os.killpg(self.process.pid, signal.SIGKILL)
+        except OSError:
+            self.process.kill()
+
     def _normalize_check_url(self, check_url):
         """
         Normalizes check_url by:
@@ -225,6 +231,7 @@ class Base(object):
                 response = urllib2.urlopen(self.check_url)
             except urllib2.URLError:
                 if sleeped > self.timeout:
+                    self._kill()
                     exitcode = self.process.wait()
                     raise LiveAndDieError(
                         '{0} server {1} didn\'t start in specified timeout {2} '
@@ -251,18 +258,22 @@ class Base(object):
         pid = port_in_use(self.port, kill)
         
         if pid:
-            raise Exception('Port {0} is already being used by process {1}!'
-                            .format(self.port, pid))
+            raise LiveAndLetDieError(
+                'Port {0} is already being used by process {1}!'
+                .format(self.port, pid)
+            )
 
         host = str(self.host)
         if re.match(_VALID_HOST_PATTERN, host):
             if self.suppress_output:
                 self.process = subprocess.Popen(self.create_command(),
                                                 stdout=subprocess.PIPE,
-                                                stderr=subprocess.PIPE)
+                                                stderr=subprocess.PIPE,
+                                                preexec_fn=os.setsid)
             else:
                 self.process = subprocess.Popen(self.create_command(),
-                                                stderr=subprocess.PIPE)
+                                                stderr=subprocess.PIPE,
+                                                preexec_fn=os.setsid)
 
             _log(self.enable_logging, 'Starting process PID: {0}'
                  .format(self.process.pid))
@@ -291,8 +302,8 @@ class Base(object):
                  'Stopping {0} server with PID: {1} running at {2}.'
                      .format(self.__class__.__name__, self.process.pid,
                              self.check_url))
-            self.process.kill()
-            self.process.wait()
+
+            self._kill()
 
         if self.kill_orphans:
             self._kill_orphans()
