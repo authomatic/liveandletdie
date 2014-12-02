@@ -53,7 +53,7 @@ def app(request):
     
     try:
         # Run the live server.
-        app.live(kill=True)
+        app.live(kill_port=True)
     except Exception as e:
         # Skip test if not started.
         pytest.fail(e.message)

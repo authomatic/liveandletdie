@@ -24,7 +24,7 @@ def when_i_launch_that_application_wit_the_subcommand_subcommand(step, dev_appse
     else:
         world.app = world.AppClass(world.path, port=port, ssl=world.ssl)
 
-    world.app.live(kill=True)
+    world.app.live(kill_port=True)
 
 
 @step(u"When I go to the app's url")

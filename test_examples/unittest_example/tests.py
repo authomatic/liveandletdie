@@ -24,7 +24,7 @@ class Base(unittest.TestCase):
     def setUpClass(cls):
         try:
             # Run the live server.
-            cls.app.live(kill=True)
+            cls.app.live(kill_port=True)
         except Exception as e:
             # Skip test if not started.
             raise unittest.SkipTest(e.message)

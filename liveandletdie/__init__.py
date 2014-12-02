@@ -17,8 +17,8 @@ class LiveAndLetDieError(BaseException):
     pass
 
 
-def _log(enable_logging, message):
-    if enable_logging:
+def _log(logging, message):
+    if logging:
         print('LIVEANDLETDIE: {0}'.format(message))
 
 
@@ -76,7 +76,7 @@ def stop(*args, **kwargs):
     die(*args, **kwargs)
 
 
-def port_in_use(port, kill=False, enable_logging=False):
+def port_in_use(port, kill=False, logging=False):
     """
     Checks whether a port is free or not.
     
@@ -104,7 +104,7 @@ def port_in_use(port, kill=False, enable_logging=False):
     headers = process.stdout.readline().split()
     
     if 'PID' not in headers:
-        _log(enable_logging, 'Port {0} is free.'.format(port))
+        _log(logging, 'Port {0} is free.'.format(port))
         return False
     
     index_pid = headers.index('PID')
@@ -117,11 +117,11 @@ def port_in_use(port, kill=False, enable_logging=False):
     command = row[index_cmd]
     
     if pid and command.startswith('python'):
-        _log(enable_logging, 'Port {0} is already being used by process {1}!'
+        _log(logging, 'Port {0} is already being used by process {1}!'
              .format(port, pid))
     
         if kill:
-            _log(enable_logging,
+            _log(logging,
                  'Killing process with id {0} listening on port {1}!'
                  .format(pid, port))
             os.kill(pid, signal.SIGKILL)
@@ -129,9 +129,9 @@ def port_in_use(port, kill=False, enable_logging=False):
             # Check whether it was really killed.
             try:
                 # If still alive
-                kill_process(pid, enable_logging)
+                kill_process(pid, logging)
                 # call me again
-                _log(enable_logging,
+                _log(logging,
                      'Process {0} is still alive! checking again...'
                      .format(pid))
                 return port_in_use(port, kill)
@@ -142,9 +142,9 @@ def port_in_use(port, kill=False, enable_logging=False):
             return pid
 
 
-def kill_process(pid, enable_logging=False):
+def kill_process(pid, logging=False):
     try:
-        _log(enable_logging, 'Killing process {0}!'.format(pid))
+        _log(logging, 'Killing process {0}!'.format(pid))
         os.kill(int(pid), signal.SIGKILL)
         return 
     except OSError:
@@ -179,7 +179,7 @@ class Base(object):
         URL where to check whether the server is running.
         Default is ``"http://{host}:{port}"``.
 
-    :param bool enable_logging:
+    :param bool logging:
         Whether liveandletdie logs should be printed out.
 
     :param bool suppress_output:
@@ -189,7 +189,7 @@ class Base(object):
     _argument_parser = argparse.ArgumentParser()
     
     def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0,
-                 check_url=None, executable='python', enable_logging=False,
+                 check_url=None, executable='python', logging=False,
                  suppress_output=True, **kwargs):
         
         self.path = path
@@ -198,7 +198,7 @@ class Base(object):
         self.port = port
         self.process = None
         self.executable = executable
-        self.enable_logging = enable_logging
+        self.logging = logging
         self.suppress_output = suppress_output
         self.check_url = 'http://{0}:{1}'.format(host, port)
         self.scheme = 'http'
@@ -267,12 +267,12 @@ class Base(object):
 
         return _get_total_seconds(datetime.now() - t)
 
-    def live(self, kill=False, check_url=None):
+    def live(self, kill_port=False, check_url=None):
         """
         Starts a live server in a separate process
         and checks whether it is running.
 
-        :param bool kill:
+        :param bool kill_port:
             If ``True``, processes running on the same port as ``self.port``
             will be killed.
 
@@ -281,7 +281,7 @@ class Base(object):
             Default is ``"http://{self.host}:{self.port}"``.
         """
         
-        pid = port_in_use(self.port, kill)
+        pid = port_in_use(self.port, kill_port)
         
         if pid:
             raise LiveAndLetDieError(
@@ -301,10 +301,10 @@ class Base(object):
                                                 stderr=subprocess.PIPE,
                                                 preexec_fn=os.setsid)
 
-            _log(self.enable_logging, 'Starting process PID: {0}'
+            _log(self.logging, 'Starting process PID: {0}'
                  .format(self.process.pid))
             duration = self.check(check_url)
-            _log(self.enable_logging,
+            _log(self.logging,
                  'Live server started in {0} seconds. PID: {1}'
                  .format(duration, self.process.pid))
             return self.process
@@ -319,12 +319,12 @@ class Base(object):
         """Stops the server if it is running."""
 
         while port_in_use(self.port, kill=True):
-            _log(self.enable_logging,
+            _log(self.logging,
                  'Process {1} is still alive, killing again.'
                  .format(self.process.pid))
 
         if self.process:
-            _log(self.enable_logging,
+            _log(self.logging,
                  'Stopping {0} server with PID: {1} running at {2}.'
                      .format(self.__class__.__name__, self.process.pid,
                              self.check_url))
@@ -344,7 +344,7 @@ class Base(object):
                                           const='170.0.0.1:5000')
 
     @classmethod
-    def parse_args(cls, enable_logging=False):
+    def parse_args(cls, logging=False):
         """
         Parses command line arguments.
 
@@ -358,7 +358,7 @@ class Base(object):
         args = cls._argument_parser.parse_args()
 
         if args.liveandletdie:
-            _log(enable_logging, 'Running as test live server at {0}'
+            _log(logging, 'Running as test live server at {0}'
                  .format(args.liveandletdie))
             return split_host(args.liveandletdie)
         else:
