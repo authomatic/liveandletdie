@@ -1,14 +1,10 @@
-==========================================
-Live and Let Die (former Test Live Server)
-==========================================
+================
+Live and Let Die
+================
 
-**Live and Let Die** (former Test Live Server) is a simple package to simplify launching and
-terminating of web development servers from **BDD** or **functional** tests.
-I have created it for functional testing of the
-`Authomatic <peterhudec.github.io/authomatic/>`_ package.
-
-Note that the package has just recently been renamed from former **testliveserver**
-to current **liveandletdie**!
+**Live and Let Die** simplifies launching and terminating of web development
+servers from **BDD** or **functional** tests. I have created it for functional
+testing of the `Authomatic <peterhudec.github.io/authomatic/>`_ package.
 
 The package Currently supports **Google App engine**, **Django**,
 **Flask** and **wsgiref.simple_server**. Support for other frameworks will
@@ -29,8 +25,7 @@ Django
     # Django
     app = liveandletdie.Django('path/to/django/project/',
                                host='0.0.0.0',
-                               port=5555,
-                               timeout=60.0)
+                               port=5555)
 
 Google App Engine
 ^^^^^^^^^^^^^^^^^
@@ -42,8 +37,7 @@ Google App Engine
     app = liveandletdie.GAE('path/to/dev_appserver.py',
                             'path/to/gae/app/dir', # containing app.yaml file
                             host='0.0.0.0',
-                            port=5555,
-                            timeout=60.0)
+                            port=5555)
 
 Flask
 ^^^^^
@@ -83,8 +77,7 @@ By **Flask** you must wrap the **WSGI application** in
 
     app = liveandletdie.Flask('path/to/flask/app/main.py',
                               host='0.0.0.0',
-                              port=5555,
-                              timeout=60.0)
+                              port=5555)
 
 Pyramid (wsgiref.simple_server)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -126,8 +119,7 @@ By ``wsgiref.simple_server`` you must wrap the **WSGI application** in
 
     app = liveandletdie.Flask('path/to/pyramid/app/main.py',
                               host='0.0.0.0',
-                              port=5555,
-                              timeout=60.0)
+                              port=5555)
 
 Using the App instance
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -137,8 +129,9 @@ The interface is the same for all of the supported frameworks.
 .. code-block:: python
 
     # Start the app.
-    # If kill is True, it will kill any Python process listening on port 5555
-    process = app.live(kill=True)
+    # If kill_port is True,
+    # it will kill any Python process listening on port 5555
+    process = app.live(kill_port=True)
 
     # You can check whether it is running
     is_running = app.check()
