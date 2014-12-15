@@ -259,14 +259,12 @@ class Base(object):
                     exitcode = self.process.wait()
                     raise LiveAndLetDieError(
                         '{0} server {1} didn\'t start in specified timeout {2} '
-                        'seconds!\ncommand: {3}\nexit status: {4}\n'
-                        'Captured stderr:\n{5}'.format(
+                        'seconds!\ncommand: {3}\nexit status: {4}\n'.format(
                             self.__class__.__name__,
                             self.check_url,
                             self.timeout,
                             ' '.join(self.create_command()),
-                            exitcode,
-                            self.process.communicate()[1]
+                            exitcode
                         )
                     )
                 sleeped = _get_total_seconds(datetime.now() - t)
@@ -288,7 +286,7 @@ class Base(object):
         """
         
         pid = port_in_use(self.port, kill_port)
-        
+
         if pid:
             raise LiveAndLetDieError(
                 'Port {0} is already being used by process {1}!'
@@ -297,15 +295,15 @@ class Base(object):
 
         host = str(self.host)
         if re.match(_VALID_HOST_PATTERN, host):
-            if self.suppress_output:
-                self.process = subprocess.Popen(self.create_command(),
-                                                stdout=subprocess.PIPE,
-                                                stderr=subprocess.PIPE,
-                                                preexec_fn=os.setsid)
-            else:
-                self.process = subprocess.Popen(self.create_command(),
-                                                stderr=subprocess.PIPE,
-                                                preexec_fn=os.setsid)
+            with open(os.devnull, "w") as devnull:
+                if self.suppress_output:
+                    self.process = subprocess.Popen(self.create_command(),
+                                                    stderr=devnull,
+                                                    stdout=devnull,
+                                                    preexec_fn=os.setsid)
+                else:
+                    self.process = subprocess.Popen(self.create_command(),
+                                                    preexec_fn=os.setsid)
 
             _log(self.logging, 'Starting process PID: {0}'
                  .format(self.process.pid))
