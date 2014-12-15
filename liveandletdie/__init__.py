@@ -101,16 +101,21 @@ def port_in_use(port, kill=False, logging=False):
         command_template.format(port).split(),
         stdout=subprocess.PIPE
     )
-    headers = process.stdout.readline().split()
-    
+    lines = process.communicate()[0].split('\n')
+    if len(lines) < 2:
+        _log(logging, 'Port {0} is free.'.format(port))
+        return False
+
+    headers = lines[0].split()
     if 'PID' not in headers:
         _log(logging, 'Port {0} is free.'.format(port))
         return False
     
     index_pid = headers.index('PID')
     index_cmd = headers.index('COMMAND')
-    row = process.stdout.readline().split()
+    row = lines[1].split()
     if len(row) < index_pid:
+        _log(logging, 'Port {0} is free.'.format(port))
         return False
     
     pid = int(row[index_pid])
