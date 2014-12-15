@@ -1,2 +1,3 @@
 include *.txt *.rst
 prune venv
+prune tests
