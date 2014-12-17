@@ -1,3 +1,8 @@
+Version 0.0.4
+-------------
+
+* Fixed a bug when app hung when there was a lot of stdout.
+
 Version 0.0.3
 -------------
 

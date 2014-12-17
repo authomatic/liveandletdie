@@ -256,15 +256,13 @@ class Base(object):
             except urllib2.URLError:
                 if sleeped > self.timeout:
                     self._kill()
-                    exitcode = self.process.wait()
                     raise LiveAndLetDieError(
                         '{0} server {1} didn\'t start in specified timeout {2} '
-                        'seconds!\ncommand: {3}\nexit status: {4}\n'.format(
+                        'seconds!\ncommand: {3}'.format(
                             self.__class__.__name__,
                             self.check_url,
                             self.timeout,
-                            ' '.join(self.create_command()),
-                            exitcode
+                            ' '.join(self.create_command())
                         )
                     )
                 sleeped = _get_total_seconds(datetime.now() - t)
