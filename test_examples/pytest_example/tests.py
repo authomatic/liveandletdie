@@ -7,11 +7,17 @@ from os import path, environ
 import sys
 import six
 
-print(sys.path)
-
 from selenium import webdriver
 import pytest
 import liveandletdie
+
+# Monkey patch the ssl module to disable SSL verification
+# (see https://www.python.org/dev/peps/pep-0476/)
+import ssl
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
 
 
 def abspath(pth):

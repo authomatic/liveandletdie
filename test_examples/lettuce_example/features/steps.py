@@ -9,6 +9,15 @@ from functools import wraps
 
 import liveandletdie
 
+# Monkey patch the ssl module to disable SSL verification
+# (see https://www.python.org/dev/peps/pep-0476/)
+import ssl
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+
+
 class SkipOnPy3k:
 
     def __init__(self):
