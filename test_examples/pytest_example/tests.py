@@ -30,16 +30,6 @@ APPS = {
         abspath('sample_apps/flask/main.py'),
         port=PORT
     ),
-    'Flask SSL': liveandletdie.Flask(
-        abspath('sample_apps/flask/main.py'),
-        port=PORT,
-        ssl=True,
-    ),
-    'GAE': liveandletdie.GAE(
-        abspath('venv/bin/dev_appserver'),
-        abspath('sample_apps/gae'),
-        port=PORT
-    ),
     'Django': liveandletdie.Django(
         abspath('sample_apps/django/example'),
         port=PORT
@@ -47,9 +37,14 @@ APPS = {
 }
 
 if six.PY2:
-    APPS['GAE'] = liveandletdie.GAE(environ['VIRTUAL_ENV'] + 'bin/dev_appserver',
-                                    abspath('sample_apps/gae'),
-                                    port=PORT)
+    APPS['Flask SSL'] = liveandletdie.Flask(
+        abspath('sample_apps/flask/main.py'),
+        port=PORT,
+        ssl=True)
+    APPS['GAE'] = liveandletdie.GAE(
+        environ['VIRTUAL_ENV'] + '/bin/dev_appserver',
+        abspath('sample_apps/gae'),
+        port=PORT)
 
 @pytest.fixture('module', APPS)
 def app(request):

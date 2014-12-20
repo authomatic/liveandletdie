@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from os import environ
 import six
 
 from lettuce import step, world
@@ -43,8 +44,10 @@ def given_a_web_application_based_on_framework_located_at_path(step, framework, 
 def when_i_launch_that_application_wit_the_subcommand_subcommand(step, dev_appserver_path, ssl):
     port = 8001
     world.ssl = ssl == 'yes'
+    if world.ssl:
+        skip_on_py3k.skip_test = True
     if dev_appserver_path:
-        world.app = world.AppClass(dev_appserver_path,
+        world.app = world.AppClass('{}/{}'.format(environ['VIRTUAL_ENV'], dev_appserver_path),
                                    world.path,
                                    port=port)
     else:

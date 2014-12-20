@@ -57,6 +57,7 @@ class TestFlask(unittest.TestCase):
     app = liveandletdie.Flask(abspath('sample_apps/flask/main.py'), port=PORT)
 
 
+@unittest.skipIf(six.PY3, "Werkzeug has a bug with Py3k and SSL")
 @test_decorator
 class TestFlaskSSL(unittest.TestCase):
     EXPECTED_TEXT = 'Home Flask SSL'
