@@ -1,6 +1,8 @@
 ================
 Live and Let Die
 ================
+.. image:: https://travis-ci.org/touilleMan/liveandletdie.svg
+    :target: https://travis-ci.org/touilleMan/liveandletdie
 
 **Live and Let Die** simplifies launching and terminating of web development
 servers from **BDD** or **functional** tests. I have created it for functional

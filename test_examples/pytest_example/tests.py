@@ -3,10 +3,11 @@
 An example of testing a Flask app with py.test and Selenium with help of testliveserver.
 """
 
-from os import path
+from os import path, environ
 import sys
+import six
 
-print sys.path
+print(sys.path)
 
 from selenium import webdriver
 import pytest
@@ -45,6 +46,10 @@ APPS = {
     ),
 }
 
+if six.PY2:
+    APPS['GAE'] = liveandletdie.GAE(environ['VIRTUAL_ENV'] + 'bin/dev_appserver',
+                                    abspath('sample_apps/gae'),
+                                    port=PORT)
 
 @pytest.fixture('module', APPS)
 def app(request):
@@ -65,7 +70,8 @@ def app(request):
 @pytest.fixture('module')
 def browser(request):
     liveandletdie.port_in_use(PORT, True)
-    browser = webdriver.Chrome()
+    # browser = webdriver.Chrome()
+    browser = webdriver.Firefox()
     browser.implicitly_wait(3)
     request.addfinalizer(lambda: browser.quit())
     return browser
