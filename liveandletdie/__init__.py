@@ -6,6 +6,7 @@ import re
 import signal
 import subprocess
 import sys
+import time
 try:
     from urllib.parse import urlsplit, splitport
     from urllib.request import urlopen
@@ -109,7 +110,7 @@ def port_in_use(port, kill=False, logging=False):
     if len(row) < index_pid:
         _log(logging, 'Port {0} is free.'.format(port))
         return False
-    
+
     pid = int(row[index_pid])
     command = row[index_cmd]
     
@@ -212,6 +213,7 @@ class Base(object):
                 os.killpg(self.process.pid, signal.SIGKILL)
             except OSError:
                 self.process.kill()
+        self.process.wait()
 
     def _normalize_check_url(self, check_url):
         """
@@ -257,6 +259,7 @@ class Base(object):
                             ' '.join(self.create_command())
                         )
                     )
+                time.sleep(1)
                 sleeped = _get_total_seconds(datetime.now() - t)
 
         return _get_total_seconds(datetime.now() - t)
