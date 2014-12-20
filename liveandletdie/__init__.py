@@ -98,15 +98,13 @@ def port_in_use(port, kill=False, logging=False):
     process = subprocess.Popen(command_template.format(port).split(),
                                stdout=subprocess.PIPE)
     headers = process.stdout.readline().decode().split()
-    
+
     if not 'PID' in headers:
         _log(logging, 'Port {0} is free.'.format(port))
         return False
-    
+
     index_pid = headers.index('PID')
     index_cmd = headers.index('COMMAND')
-    # row = lines[1].split()
-    
     row = process.stdout.readline().decode().split()
     if len(row) < index_pid:
         _log(logging, 'Port {0} is free.'.format(port))
@@ -225,7 +223,6 @@ class Base(object):
 
         # TODO: Write tests for this method
         split_url = urlsplit(check_url)
-        # import pdb;pdb.set_trace()
         host = splitport(split_url.path or split_url.netloc)[0]
         return '{0}://{1}:{2}'.format(self.scheme, host, self.port)
 

@@ -5,3 +5,4 @@ pyramid
 pytest
 selenium
 unittest2
+pyOpenSSL
