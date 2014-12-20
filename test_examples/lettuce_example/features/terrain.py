@@ -6,7 +6,7 @@ from selenium import webdriver
 @before.all
 def setup_browser():
     print("starting browser")
-    world.browser = webdriver.Chrome()
+    world.browser = webdriver.Firefox()
     world.browser.implicitly_wait(3)    
      
 @after.all
