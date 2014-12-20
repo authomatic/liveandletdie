@@ -28,7 +28,7 @@ def test_decorator(cls):
             raise unittest.SkipTest(e.message)
         
         # Start browser.
-        cls.browser = webdriver.Firefox()
+        cls.browser = webdriver.Chrome()
         cls.browser.implicitly_wait(3)
     
     @classmethod
