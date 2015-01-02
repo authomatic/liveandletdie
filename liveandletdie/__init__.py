@@ -6,9 +6,14 @@ import re
 import signal
 import subprocess
 import sys
-import urllib2
-import urlparse
-
+import time
+try:
+    from urllib.parse import urlsplit, splitport
+    from urllib.request import urlopen
+    from urllib.error import URLError
+except ImportError:
+    from urllib2 import urlopen, splitport, URLError
+    from urlparse import urlsplit
 
 _VALID_HOST_PATTERN = r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}([:]\d+)?$'
 
@@ -90,34 +95,22 @@ def port_in_use(port, kill=False, logging=False):
         The process id as :class:`int` if in use, otherwise ``False`` .
     """
 
-    command_template = 'lsof -i :{0}'
+    command_template = 'lsof -iTCP:{0} -sTCP:LISTEN'
+    process = subprocess.Popen(command_template.format(port).split(),
+                               stdout=subprocess.PIPE)
+    headers = process.stdout.readline().decode().split()
 
-    # If OSX
-    if platform.platform().lower().startswith('darwin'):
-        # https://stackoverflow.com/questions/4421633/who-is-listening-on-a-given-tcp-port-on-mac-os-x/4421674#4421674
-        command_template = 'lsof -iTCP:{0} -sTCP:LISTEN'
-
-    process = subprocess.Popen(
-        command_template.format(port).split(),
-        stdout=subprocess.PIPE
-    )
-    lines = process.communicate()[0].split('\n')
-    if len(lines) < 2:
+    if not 'PID' in headers:
         _log(logging, 'Port {0} is free.'.format(port))
         return False
 
-    headers = lines[0].split()
-    if 'PID' not in headers:
-        _log(logging, 'Port {0} is free.'.format(port))
-        return False
-    
     index_pid = headers.index('PID')
     index_cmd = headers.index('COMMAND')
-    row = lines[1].split()
+    row = process.stdout.readline().decode().split()
     if len(row) < index_pid:
         _log(logging, 'Port {0} is free.'.format(port))
         return False
-    
+
     pid = int(row[index_pid])
     command = row[index_cmd]
     
@@ -220,6 +213,7 @@ class Base(object):
                 os.killpg(self.process.pid, signal.SIGKILL)
             except OSError:
                 self.process.kill()
+        self.process.wait()
 
     def _normalize_check_url(self, check_url):
         """
@@ -230,8 +224,8 @@ class Base(object):
         """
 
         # TODO: Write tests for this method
-        split_url = urlparse.urlsplit(check_url)
-        host = urllib2.splitport(split_url.path or split_url.netloc)[0]
+        split_url = urlsplit(check_url)
+        host = splitport(split_url.path or split_url.netloc)[0]
         return '{0}://{1}:{2}'.format(self.scheme, host, self.port)
 
     def check(self, check_url=None):
@@ -249,11 +243,11 @@ class Base(object):
         response = None
         sleeped = 0.0
         t = datetime.now()
-        
+
         while not response:
             try:
-                response = urllib2.urlopen(self.check_url)
-            except urllib2.URLError:
+                response = urlopen(self.check_url)
+            except URLError:
                 if sleeped > self.timeout:
                     self._kill()
                     raise LiveAndLetDieError(
@@ -265,6 +259,7 @@ class Base(object):
                             ' '.join(self.create_command())
                         )
                     )
+                time.sleep(1)
                 sleeped = _get_total_seconds(datetime.now() - t)
 
         return _get_total_seconds(datetime.now() - t)
@@ -479,7 +474,6 @@ class GAE(Base):
 
         if self.dev_appserver_path.endswith(('.py', '.pyc')):
             command = [self.executable] + command
-
         return command
 
 

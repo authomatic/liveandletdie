@@ -5,4 +5,4 @@ pyramid
 pytest
 selenium
 unittest2
-gae_installer
+pyOpenSSL

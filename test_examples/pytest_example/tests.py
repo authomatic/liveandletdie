@@ -3,14 +3,21 @@
 An example of testing a Flask app with py.test and Selenium with help of testliveserver.
 """
 
-from os import path
+from os import path, environ
 import sys
-
-print sys.path
+import six
 
 from selenium import webdriver
 import pytest
 import liveandletdie
+
+# Monkey patch the ssl module to disable SSL verification
+# (see https://www.python.org/dev/peps/pep-0476/)
+import ssl
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
 
 
 def abspath(pth):
@@ -29,22 +36,21 @@ APPS = {
         abspath('sample_apps/flask/main.py'),
         port=PORT
     ),
-    'Flask SSL': liveandletdie.Flask(
-        abspath('sample_apps/flask/main.py'),
-        port=PORT,
-        ssl=True,
-    ),
-    'GAE': liveandletdie.GAE(
-        abspath('venv/bin/dev_appserver'),
-        abspath('sample_apps/gae'),
-        port=PORT
-    ),
     'Django': liveandletdie.Django(
         abspath('sample_apps/django/example'),
         port=PORT
     ),
 }
 
+if six.PY2:
+    APPS['Flask SSL'] = liveandletdie.Flask(
+        abspath('sample_apps/flask/main.py'),
+        port=PORT,
+        ssl=True)
+    APPS['GAE'] = liveandletdie.GAE(
+        environ['VIRTUAL_ENV'] + '/bin/dev_appserver',
+        abspath('sample_apps/gae'),
+        port=PORT)
 
 @pytest.fixture('module', APPS)
 def app(request):
@@ -65,7 +71,7 @@ def app(request):
 @pytest.fixture('module')
 def browser(request):
     liveandletdie.port_in_use(PORT, True)
-    browser = webdriver.Chrome()
+    browser = webdriver.Firefox()
     browser.implicitly_wait(3)
     request.addfinalizer(lambda: browser.quit())
     return browser

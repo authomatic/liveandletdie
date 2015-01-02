@@ -13,6 +13,6 @@ Feature: Visit homepage
 		| framework				| path				| subcommand				| text			    | ssl   |
 		| Flask					| flask/main.py		| 							| Home Flask	    | no    |
 		| Flask 				| flask/main.py		| 							| Home Flask SSL	| yes	|
-		| GAE					| gae				| venv/bin/dev_appserver	| Home GAE		    | no	|
+		| GAE					| gae				| bin/dev_appserver			| Home GAE		    | no	|
 		| Django				| django/example	| 							| Home Django	    | no	|
 		| WsgirefSimpleServer	| pyramid/main.py	| 							| Home Pyramid	    | no	|

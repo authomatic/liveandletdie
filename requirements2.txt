@@ -1,0 +1,9 @@
+Django
+Flask
+lettuce
+pyramid
+pytest
+selenium
+unittest2
+gae_installer
+pyOpenSSL

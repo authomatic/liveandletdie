@@ -1,4 +1,5 @@
-from os import path
+from os import path, environ
+import six
 
 import liveandletdie
 from selenium import webdriver
@@ -8,6 +9,14 @@ try:
 except ImportError:
     import unittest
 
+# Monkey patch the ssl module to disable SSL verification
+# (see https://www.python.org/dev/peps/pep-0476/)
+import ssl
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+
 
 def abspath(pth):
     return path.join(path.dirname(__file__), '../..', pth)
@@ -16,10 +25,7 @@ def abspath(pth):
 PORT = 8001
 
 
-class Base(unittest.TestCase):
-    EXPECTED_TEXT = None
-    app = None
-    
+def test_decorator(cls):
     @classmethod
     def setUpClass(cls):
         try:
@@ -30,7 +36,7 @@ class Base(unittest.TestCase):
             raise unittest.SkipTest(e.message)
         
         # Start browser.
-        cls.browser = webdriver.Chrome()
+        cls.browser = webdriver.Firefox()
         cls.browser.implicitly_wait(3)
     
     @classmethod
@@ -47,31 +53,43 @@ class Base(unittest.TestCase):
         page_text = self.browser.find_element_by_tag_name('body').text
         self.assertIn(self.EXPECTED_TEXT, page_text)
 
+    cls.setUpClass = setUpClass
+    cls.tearDownClass = tearDownClass
+    cls.test_visit_start_page = test_visit_start_page
+    return cls
 
-class TestFlask(Base):
+
+@test_decorator
+class TestFlask(unittest.TestCase):
     EXPECTED_TEXT = 'Home Flask'
     app = liveandletdie.Flask(abspath('sample_apps/flask/main.py'), port=PORT)
 
 
-class TestFlaskSSL(Base):
+@unittest.skipIf(six.PY3, "https://github.com/mitsuhiko/werkzeug/issues/447")
+@test_decorator
+class TestFlaskSSL(unittest.TestCase):
     EXPECTED_TEXT = 'Home Flask SSL'
     app = liveandletdie.Flask(abspath('sample_apps/flask/main.py'), port=PORT,
                               ssl=True)
 
 
-class TestPyramid(Base):
+@test_decorator
+class TestPyramid(unittest.TestCase):
     EXPECTED_TEXT = 'Home Pyramid'
     app = liveandletdie.WsgirefSimpleServer(abspath('sample_apps/pyramid/main.py'), port=PORT)
 
 
-class TestDjango(Base):
+@test_decorator
+class TestDjango(unittest.TestCase):
     EXPECTED_TEXT = 'Home Django'
     app = liveandletdie.Django(abspath('sample_apps/django/example'), port=PORT)
 
 
-class TestGAE(Base):
+@unittest.skipIf(six.PY3, "GAE not implemented for Py3k")
+@test_decorator
+class TestGAE(unittest.TestCase):
     EXPECTED_TEXT = 'Home GAE'
-    app = liveandletdie.GAE(abspath('venv/bin/dev_appserver'),
+    app = liveandletdie.GAE(environ['VIRTUAL_ENV'] + '/bin/dev_appserver',
                   abspath('sample_apps/gae'), port=PORT)
 
 
