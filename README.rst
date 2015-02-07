@@ -63,7 +63,8 @@ will be ``"https"``.
     `pyOpenSSL <https://pypi.python.org/pypi/pyOpenSSL>`__ on OSX due to
     ``'ffi.h' file not found`` error during installation of the
     `cryptography <https://pypi.python.org/pypi/cryptography/0.7.2>`__
-    dependency, try this:
+    dependency, try the solution from this
+    `Stackoverflow question <http://stackoverflow.com/questions/22875270/error-installing-bcrypt-with-pip-on-os-x-cant-find-ffi-h-libffi-is-installed>`__:
 
     .. code-block:: bash
 
