@@ -1,3 +1,9 @@
+Version 0.0.5
+-------------
+
+* Added Python 3 support thanks to
+  `Emmanuel Leblond <https://github.com/touilleMan>`_.
+
 Version 0.0.4
 -------------
 
