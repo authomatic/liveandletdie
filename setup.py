@@ -8,7 +8,7 @@ HERE = os.path.dirname(__file__)
 
 setup(
     name=NAME,
-    version='0.0.4',
+    version='0.0.5',
     packages=find_packages(),
     package_data={'': ['*.txt', '*.rst']},
     author='Peter Hudec',
@@ -28,6 +28,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
         'Programming Language :: JavaScript',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content :: '
