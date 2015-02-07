@@ -16,3 +16,5 @@ venv/
 liveandletdie.egg-info/
 venv26/
 bootstrap/bootstrap.py
+e2/
+e3/
