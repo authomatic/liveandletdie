@@ -9,6 +9,7 @@ from functools import wraps
 
 import liveandletdie
 
+
 # Monkey patch the ssl module to disable SSL verification
 # (see https://www.python.org/dev/peps/pep-0476/)
 import ssl
@@ -34,29 +35,34 @@ class SkipOnPy3k:
         @wraps(func)
         def wrapper(step, framework, path):
             self.skip_test = framework == six.u('GAE') and not six.PY2
-            print(framework, six.PY2, self.skip_test)
+            # print(framework, six.PY2, self.skip_test)
             if not self.skip_test:
                 return func(step, framework, path)
         return wrapper
 
+
 skip_on_py3k = SkipOnPy3k()
+
 
 @step('Given a web application based on (\w+) located at ([\w/.]+)')
 @skip_on_py3k.init
-def given_a_web_application_based_on_framework_located_at_path(step, framework, path):
+def given_a_web_application(step, framework, path):
     world.AppClass = getattr(liveandletdie, framework)
-    world.path = os.path.join(os.path.dirname(__file__), '../../../sample_apps', path)
+    world.path = os.path.join(os.path.dirname(__file__),
+                              '../../../sample_apps', path)
 
 
-@step('When I launch that application wit the subcommand ([\w/.]*) with (yes|no)')
+@step('When I launch that application wit the subcommand '
+      '([\w/.]*) with (yes|no)')
 @skip_on_py3k.call
-def when_i_launch_that_application_wit_the_subcommand_subcommand(step, dev_appserver_path, ssl):
+def when_i_launch_that_application(step, dev_appserver_path, ssl):
     port = 8001
     world.ssl = ssl == 'yes'
     if world.ssl:
         skip_on_py3k.skip_test = True
     if dev_appserver_path:
-        world.app = world.AppClass('{}/{}'.format(environ['VIRTUAL_ENV'], dev_appserver_path),
+        world.app = world.AppClass('{}/{}'.format(environ['VIRTUAL_ENV'],
+                                   dev_appserver_path),
                                    world.path,
                                    port=port)
     else:

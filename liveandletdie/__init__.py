@@ -1,7 +1,6 @@
 import argparse
 from datetime import datetime
 import os
-import platform
 import re
 import signal
 import subprocess
@@ -14,6 +13,7 @@ try:
 except ImportError:
     from urllib2 import urlopen, splitport, URLError
     from urlparse import urlsplit
+
 
 _VALID_HOST_PATTERN = r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}([:]\d+)?$'
 
@@ -100,7 +100,7 @@ def port_in_use(port, kill=False, logging=False):
                                stdout=subprocess.PIPE)
     headers = process.stdout.readline().decode().split()
 
-    if not 'PID' in headers:
+    if 'PID' not in headers:
         _log(logging, 'Port {0} is free.'.format(port))
         return False
 
@@ -353,7 +353,7 @@ class Base(object):
                  .format(args.liveandletdie))
             return split_host(args.liveandletdie)
         else:
-            return (None, None)
+            return None, None
 
 
 class WrapperBase(Base):

@@ -25,8 +25,6 @@ def abspath(pth):
 
 
 PORT = 8001
-
-
 APPS = {
     'Pyramid': liveandletdie.WsgirefSimpleServer(
         abspath('sample_apps/pyramid/main.py'),
@@ -51,6 +49,7 @@ if six.PY2:
         environ['VIRTUAL_ENV'] + '/bin/dev_appserver',
         abspath('sample_apps/gae'),
         port=PORT)
+
 
 @pytest.fixture('module', APPS)
 def app(request):
@@ -82,4 +81,3 @@ def test_home(browser, app):
     browser.get(app.check_url)
     page_text = browser.find_element_by_tag_name('body').text    
     assert 'Home {0}'.format(app.name) in page_text
-
