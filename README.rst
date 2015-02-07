@@ -47,6 +47,30 @@ Flask
 By **Flask** you must wrap the **WSGI application** in
 ``liveandletdie.Flask.wrap(app)``.
 
+If you set the ``ssl`` keyword argument to ``True``, the app will be run with
+``ssl_context="adhoc"`` and the schema of the ``self.check_url``
+will be ``"https"``.
+
+.. warning::
+
+    The Flask with ssl_context **doesn't work in Python 3** because
+    Werkzeug still uses ``sys.maxint`` which is not supported in Python 3.
+    https://github.com/mitsuhiko/werkzeug/issues/447
+
+.. note::
+
+    If you are struggling with installation of
+    `pyOpenSSL <https://pypi.python.org/pypi/pyOpenSSL>`__ on OSX due to
+    ``'ffi.h' file not found`` error during installation of the
+    `cryptography <https://pypi.python.org/pypi/cryptography/0.7.2>`__
+    dependency, try this:
+
+    .. code-block:: bash
+
+        $ brew install pkg-config libffi
+        $ export PKG_CONFIG_PATH=/usr/local/Cellar/libffi/3.0.13/lib/pkgconfig/
+        $ pip install pyopenssl
+
 .. code-block:: python
 
     # flask/app/main.py
