@@ -174,6 +174,22 @@ https://github.com/peterhudec/liveandletdie/blob/master/test_examples/pytest_exa
 Simple Lettuce example:
 https://github.com/peterhudec/liveandletdie/blob/master/test_examples/lettuce_example/tests.py
 
+Debugging
+---------
+
+If an app refuses to start on the ``app.live()`` call, it throws a
+``LiveAndLetDieError`` with a message::
+
+    Flask server https://127.0.0.1:5555 didn't start in specified timeout 10.0 seconds!
+    command: python sample_apps/flask/main.py --liveandletdie 127.0.0.1:5555
+
+To find out more about why the app didn't start run the command provided in the
+error message manually:
+
+.. code-block:: bash
+
+    $ python sample_apps/flask/main.py --liveandletdie 127.0.0.1:5555
+
 Developers
 ----------
 
