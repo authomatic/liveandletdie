@@ -54,8 +54,8 @@ will be ``"https"``.
 .. warning::
 
     The Flask with ssl_context **doesn't work in Python 3** because
-    Werkzeug still uses ``sys.maxint`` which is not supported in Python 3.
-    https://github.com/mitsuhiko/werkzeug/issues/447
+    Werkzeug still uses ``sys.maxint`` which is not supported in Python 3
+    (see `https://github.com/mitsuhiko/werkzeug/issues/447`__)
 
 .. note::
 
