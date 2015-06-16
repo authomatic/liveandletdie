@@ -1,3 +1,8 @@
+Version 0.0.6
+-------------
+
+* The ``check()`` method now uses the `requests <python-requests.org>`__ package.
+
 Version 0.0.5
 -------------
 

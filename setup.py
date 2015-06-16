@@ -8,7 +8,7 @@ HERE = os.path.dirname(__file__)
 
 setup(
     name=NAME,
-    version='0.0.5',
+    version='0.0.6',
     packages=find_packages(),
     install_requires=['requests'],
     package_data={'': ['*.txt', '*.rst']},
