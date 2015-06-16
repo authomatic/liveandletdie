@@ -1,25 +1,17 @@
 # -*- coding: utf-8 -*-
+from functools import wraps
 import os
-from os import environ
+import sys
+
+from lettuce import (
+    step,
+    world
+)
+import liveandletdie
 import six
 
-from lettuce import step, world
-from selenium import webdriver
-from functools import wraps
 
-import liveandletdie
-
-
-# Monkey patch the ssl module to disable SSL verification
-# (see https://www.python.org/dev/peps/pep-0476/)
-import ssl
-try:
-    ssl._create_default_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
-
-
-class SkipOnPy3k:
+class Skip:
 
     def __init__(self):
         self.skip_test = False
@@ -34,51 +26,52 @@ class SkipOnPy3k:
     def init(self, func):
         @wraps(func)
         def wrapper(step, framework, path):
-            self.skip_test = framework == six.u('GAE') and not six.PY2
-            # print(framework, six.PY2, self.skip_test)
             if not self.skip_test:
                 return func(step, framework, path)
         return wrapper
 
 
-skip_on_py3k = SkipOnPy3k()
+skip = Skip()
 
 
 @step('Given a web application based on (\w+) located at ([\w/.]+)')
-@skip_on_py3k.init
+@skip.init
 def given_a_web_application(step, framework, path):
     world.AppClass = getattr(liveandletdie, framework)
+
+    if framework == 'GAE' and not (six.PY2 and sys.version_info[1] is 7):
+        print('GAE not supported on {0}'.format(sys.version))
+        skip.skip_test = True
+
     world.path = os.path.join(os.path.dirname(__file__),
                               '../../../sample_apps', path)
 
 
 @step('When I launch that application wit the subcommand '
       '([\w/.]*) with (yes|no)')
-@skip_on_py3k.call
+@skip.call
 def when_i_launch_that_application(step, dev_appserver_path, ssl):
     port = 8001
-    world.ssl = ssl == 'yes'
-    if world.ssl:
-        skip_on_py3k.skip_test = True
     if dev_appserver_path:
-        world.app = world.AppClass('{}/{}'.format(environ['VIRTUAL_ENV'],
-                                   dev_appserver_path),
-                                   world.path,
-                                   port=port)
+        world.app = world.AppClass(
+            '{0}/{1}'.format(os.environ['VIRTUAL_ENV'], dev_appserver_path),
+            world.path,
+            port=port
+        )
     else:
-        world.app = world.AppClass(world.path, port=port, ssl=world.ssl)
+        world.app = world.AppClass(world.path, port=port, ssl=(ssl == 'yes'))
 
     world.app.live(kill_port=True)
 
 
 @step("When I go to the app's url")
-@skip_on_py3k.call
+@skip.call
 def when_i_go_to_the_app_s_url(step):
     world.browser.get(world.app.check_url)
 
 
 @step('Then I see "(.*)"')
-@skip_on_py3k.call
+@skip.call
 def then_i_see_text(step, text):
     page_text = world.browser.find_element_by_tag_name('body').text
     assert text in page_text

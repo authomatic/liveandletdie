@@ -1,22 +1,13 @@
 from os import path, environ
-import six
+import sys
 
 import liveandletdie
-from selenium import webdriver
-
 try:
     import unittest2 as unittest
 except ImportError:
     import unittest
 
-
-# Monkey patch the ssl module to disable SSL verification
-# (see https://www.python.org/dev/peps/pep-0476/)
-import ssl
-try:
-    ssl._create_default_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
+import sample_apps
 
 
 def abspath(pth):
@@ -34,10 +25,10 @@ def test_decorator(cls):
             cls.app.live(kill_port=True)
         except Exception as e:
             # Skip test if not started.
-            raise unittest.SkipTest(e.message)
+            raise unittest.SkipTest(e)
         
         # Start browser.
-        cls.browser = webdriver.Firefox()
+        cls.browser = sample_apps.get_browser()
         cls.browser.implicitly_wait(3)
     
     @classmethod
@@ -48,6 +39,7 @@ def test_decorator(cls):
         # Stop browser.
         if hasattr(cls, 'browser'):
             cls.browser.quit()
+            sample_apps.teardown()
     
     def test_visit_start_page(self):
         self.browser.get(self.app.check_url)
@@ -66,7 +58,6 @@ class TestFlask(unittest.TestCase):
     app = liveandletdie.Flask(abspath('sample_apps/flask/main.py'), port=PORT)
 
 
-@unittest.skipIf(six.PY3, "https://github.com/mitsuhiko/werkzeug/issues/447")
 @test_decorator
 class TestFlaskSSL(unittest.TestCase):
     EXPECTED_TEXT = 'Home Flask SSL'
@@ -86,7 +77,8 @@ class TestDjango(unittest.TestCase):
     app = liveandletdie.Django(abspath('sample_apps/django/example'), port=PORT)
 
 
-@unittest.skipIf(six.PY3, "GAE not implemented for Py3k")
+@unittest.skipUnless(sys.version_info[0] is 2 and sys.version_info[1] is 7,
+                     "GAE not implemented for {0}".format(sys.version))
 @test_decorator
 class TestGAE(unittest.TestCase):
     EXPECTED_TEXT = 'Home GAE'

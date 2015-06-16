@@ -4,12 +4,12 @@ An example of testing a Flask app with py.test and Selenium with help of testliv
 """
 
 from os import path, environ
-import six
+import sys
 
-from selenium import webdriver
-import pytest
 import liveandletdie
-from pyvirtualdisplay import Display
+import pytest
+
+import sample_apps
 
 
 def abspath(pth):
@@ -26,17 +26,19 @@ APPS = {
         abspath('sample_apps/flask/main.py'),
         port=PORT
     ),
+    'Flask SSL': liveandletdie.Flask(
+        abspath('sample_apps/flask/main.py'),
+        port=PORT,
+        ssl=True
+    ),
     'Django': liveandletdie.Django(
         abspath('sample_apps/django/example'),
         port=PORT
     ),
 }
 
-if six.PY2:
-    APPS['Flask SSL'] = liveandletdie.Flask(
-        abspath('sample_apps/flask/main.py'),
-        port=PORT,
-        ssl=True)
+
+if sys.version_info[0] is 2 and sys.version_info[1] is 7:
     APPS['GAE'] = liveandletdie.GAE(
         environ['VIRTUAL_ENV'] + '/bin/dev_appserver',
         abspath('sample_apps/gae'),
@@ -63,16 +65,12 @@ def app(request):
 def browser(request):
     liveandletdie.port_in_use(PORT, True)
 
-    display = Display(visible=0, size=(1024, 768))
-    display.start()
-
-
-    browser = webdriver.Firefox()
+    browser = sample_apps.get_browser()
     browser.implicitly_wait(3)
 
     def finalizer():
         browser.quit()
-        display.stop()
+        sample_apps.teardown()
 
     request.addfinalizer(finalizer)
     return browser

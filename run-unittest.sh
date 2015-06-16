@@ -1,2 +1,2 @@
 # Run tests
-python test_examples/unittest_example/tests.py
+python test_examples/unittest_example/tests.py -vv
