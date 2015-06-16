@@ -18,3 +18,5 @@ venv26/
 bootstrap/bootstrap.py
 e2/
 e3/
+.tox/
+e/

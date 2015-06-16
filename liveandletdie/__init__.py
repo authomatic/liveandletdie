@@ -8,11 +8,14 @@ import sys
 import time
 try:
     from urllib.parse import urlsplit, splitport
-    from urllib.request import urlopen
-    from urllib.error import URLError
+    # from urllib.request import urlopen
+    # from urllib.error import URLError
 except ImportError:
-    from urllib2 import urlopen, splitport, URLError
+    pass
+    from urllib2 import urlopen, splitport
     from urlparse import urlsplit
+
+import requests
 
 
 _VALID_HOST_PATTERN = r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}([:]\d+)?$'
@@ -246,8 +249,8 @@ class Base(object):
 
         while not response:
             try:
-                response = urlopen(self.check_url)
-            except URLError:
+                response = requests.get(self.check_url, verify=False)
+            except requests.exceptions.ConnectionError:
                 if sleeped > self.timeout:
                     self._kill()
                     raise LiveAndLetDieError(

@@ -4,20 +4,12 @@ An example of testing a Flask app with py.test and Selenium with help of testliv
 """
 
 from os import path, environ
-import sys
 import six
 
 from selenium import webdriver
 import pytest
 import liveandletdie
-
-# Monkey patch the ssl module to disable SSL verification
-# (see https://www.python.org/dev/peps/pep-0476/)
-import ssl
-try:
-    ssl._create_default_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
+from pyvirtualdisplay import Display
 
 
 def abspath(pth):
@@ -70,9 +62,19 @@ def app(request):
 @pytest.fixture('module')
 def browser(request):
     liveandletdie.port_in_use(PORT, True)
+
+    display = Display(visible=0, size=(1024, 768))
+    display.start()
+
+
     browser = webdriver.Firefox()
     browser.implicitly_wait(3)
-    request.addfinalizer(lambda: browser.quit())
+
+    def finalizer():
+        browser.quit()
+        display.stop()
+
+    request.addfinalizer(finalizer)
     return browser
 
 
