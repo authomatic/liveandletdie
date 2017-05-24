@@ -26,21 +26,21 @@ def test_decorator(cls):
         except Exception as e:
             # Skip test if not started.
             raise unittest.SkipTest(e)
-        
+
         # Start browser.
         cls.browser = sample_apps.get_browser()
         cls.browser.implicitly_wait(3)
-    
+
     @classmethod
     def tearDownClass(cls):
         # Stop server.
         cls.app.die()
-         
+
         # Stop browser.
         if hasattr(cls, 'browser'):
             cls.browser.quit()
             sample_apps.teardown()
-    
+
     def test_visit_start_page(self):
         self.browser.get(self.app.check_url)
         page_text = self.browser.find_element_by_tag_name('body').text

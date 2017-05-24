@@ -49,14 +49,14 @@ if sys.version_info[0] is 2 and sys.version_info[1] is 7:
 def app(request):
     app = APPS[request.param]
     app.name = request.param
-    
+
     try:
         # Run the live server.
         app.live(kill_port=True)
     except Exception as e:
         # Skip test if not started.
         pytest.fail(e.message)
-    
+
     request.addfinalizer(lambda: app.die())
     return app
 
@@ -79,5 +79,5 @@ def browser(request):
 def test_home(browser, app):
     """Andy visits a webpage and sees "Home"."""
     browser.get(app.check_url)
-    page_text = browser.find_element_by_tag_name('body').text    
+    page_text = browser.find_element_by_tag_name('body').text
     assert 'Home {0}'.format(app.name) in page_text

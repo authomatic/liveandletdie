@@ -8,8 +8,8 @@ import sample_apps
 def setup_browser():
     print("starting browser")
     world.browser = sample_apps.get_browser()
-    world.browser.implicitly_wait(3)    
-     
+    world.browser.implicitly_wait(3)
+
 @after.all
 def teardown_browser_and_server(total):
     print("terminating browser")
