@@ -202,6 +202,10 @@ Clone:
 
 Bootstrap the development environment.
 This will create the ``./venv`` virtual environment in the project root.
+geckodriver_  must also be installed somewhere in your `$PATH` (e.g. in `venv/bin/`).
+
+The virtual environment defaults to python2.
+To use python3, set the environment variable: `PYTHON_VER=3`
 
 ::
     
@@ -220,3 +224,5 @@ Or bootstrap and run tests in one step:
     $ sh bootstrap-and-test.sh
 
 Enjoy!
+
+.. _geckodriver: https://github.com/mozilla/geckodriver
