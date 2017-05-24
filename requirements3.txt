@@ -3,6 +3,8 @@ Flask
 lettuce
 pyramid
 pytest
+pyvirtualdisplay
+requests
 selenium
 unittest2
 pyOpenSSL
