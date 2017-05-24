@@ -1,3 +1,6 @@
 language: python
 install: pip install tox
 script: tox
+dist: trusty
+addons:
+  firefox: "latest"
