@@ -70,7 +70,6 @@ def browser(request):
 
     def finalizer():
         browser.quit()
-        sample_apps.teardown()
 
     request.addfinalizer(finalizer)
     return browser

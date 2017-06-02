@@ -39,7 +39,6 @@ def test_decorator(cls):
         # Stop browser.
         if hasattr(cls, 'browser'):
             cls.browser.quit()
-            sample_apps.teardown()
     
     def test_visit_start_page(self):
         self.browser.get(self.app.check_url)

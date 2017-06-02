@@ -14,4 +14,3 @@ def setup_browser():
 def teardown_browser_and_server(total):
     print("terminating browser")
     world.browser.quit()
-    sample_apps.teardown()
