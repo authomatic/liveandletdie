@@ -3,12 +3,11 @@ from functools import wraps
 import os
 import sys
 
-from lettuce import (
-    step,
-    world
-)
-import liveandletdie
+from lettuce import step, world
 import six
+import requests
+
+import liveandletdie
 
 
 class Skip:
@@ -67,12 +66,12 @@ def when_i_launch_that_application(step, dev_appserver_path, ssl):
 @step("When I go to the app's url")
 @skip.call
 def when_i_go_to_the_app_s_url(step):
-    world.browser.get(world.app.check_url)
+    world.page_text = requests.get(world.app.check_url, verify=False).\
+        content.decode('utf-8')
 
 
 @step('Then I see "(.*)"')
 @skip.call
 def then_i_see_text(step, text):
-    page_text = world.browser.find_element_by_tag_name('body').text
-    assert text in page_text
+    assert text in world.page_text
     world.app.die()
