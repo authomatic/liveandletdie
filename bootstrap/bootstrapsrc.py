@@ -1,4 +1,8 @@
 import os
+try:
+    from urllib.request import urlretrieve
+except ImportError:
+    from urllib import urlretrieve
 import urllib
 import zipfile
 import platform
@@ -19,7 +23,7 @@ def after_install(options, home_dir):
 
     def _download_and_extract(url, extract_path):
         print('Downloading {0}'.format(url))
-        tmp_zip_path = urllib.urlretrieve(url)[0]
+        tmp_zip_path = urlretrieve(url)[0]
         zf = zipfile.ZipFile(tmp_zip_path)
 
         extract_path = os.path.join(home_dir, extract_path)
