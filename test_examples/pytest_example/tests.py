@@ -8,8 +8,7 @@ import sys
 
 import liveandletdie
 import pytest
-
-import sample_apps
+import requests
 
 
 def abspath(pth):
@@ -61,23 +60,9 @@ def app(request):
     return app
 
 
-@pytest.fixture('module')
-def browser(request):
-    liveandletdie.port_in_use(PORT, True)
-
-    browser = sample_apps.get_browser()
-    browser.implicitly_wait(3)
-
-    def finalizer():
-        browser.quit()
-        sample_apps.teardown()
-
-    request.addfinalizer(finalizer)
-    return browser
-
-
-def test_home(browser, app):
+def test_home(app):
     """Andy visits a webpage and sees "Home"."""
-    browser.get(app.check_url)
-    page_text = browser.find_element_by_tag_name('body').text
+    page_text = requests.get(app.check_url, verify=False).\
+        content.decode('utf-8')
+
     assert 'Home {0}'.format(app.name) in page_text

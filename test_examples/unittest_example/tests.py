@@ -1,13 +1,13 @@
 from os import path, environ
 import sys
 
-import liveandletdie
+import requests
 try:
     import unittest2 as unittest
 except ImportError:
     import unittest
 
-import sample_apps
+import liveandletdie
 
 
 def abspath(pth):
@@ -27,23 +27,14 @@ def test_decorator(cls):
             # Skip test if not started.
             raise unittest.SkipTest(e)
 
-        # Start browser.
-        cls.browser = sample_apps.get_browser()
-        cls.browser.implicitly_wait(3)
-
     @classmethod
     def tearDownClass(cls):
-        # Stop server.
         cls.app.die()
 
-        # Stop browser.
-        if hasattr(cls, 'browser'):
-            cls.browser.quit()
-            sample_apps.teardown()
-
     def test_visit_start_page(self):
-        self.browser.get(self.app.check_url)
-        page_text = self.browser.find_element_by_tag_name('body').text
+        page_text = requests.get(self.app.check_url, verify=False).\
+            content.decode('utf-8')
+
         self.assertIn(self.EXPECTED_TEXT, page_text)
 
     cls.setUpClass = setUpClass
