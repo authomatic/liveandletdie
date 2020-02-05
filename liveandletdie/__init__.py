@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 from datetime import datetime
 import os
@@ -6,15 +7,12 @@ import signal
 import subprocess
 import sys
 import time
+# pylint: disable=wrong-import-order
 try:
     from urllib.parse import urlsplit, splitport
-    # from urllib.request import urlopen
-    # from urllib.error import URLError
 except ImportError:
-    pass
-    from urllib2 import urlopen, splitport
+    from urllib2 import splitport
     from urlparse import urlsplit
-
 import requests
 
 
@@ -41,14 +39,14 @@ def _validate_host(host):
 def split_host(host):
     """
     Splits host into host and port.
-    
+
     :param str host:
         Host including port.
-    
+
     :returns:
         A ``(str(host), int(port))`` tuple.
     """
-    
+
     host, port = (host.split(':') + [None])[:2]
     return host, int(port)
 
@@ -87,13 +85,13 @@ def stop(*args, **kwargs):
 def port_in_use(port, kill=False, logging=False):
     """
     Checks whether a port is free or not.
-    
+
     :param int port:
         The port number to check for.
-        
+
     :param bool kill:
         If ``True`` the process will be killed.
-    
+
     :returns:
         The process id as :class:`int` if in use, otherwise ``False`` .
     """
@@ -116,11 +114,11 @@ def port_in_use(port, kill=False, logging=False):
 
     pid = int(row[index_pid])
     command = row[index_cmd]
-    
+
     if pid and command.startswith('python'):
         _log(logging, 'Port {0} is already being used by process {1}!'
              .format(port, pid))
-    
+
         if kill:
             _log(logging,
                  'Killing process with id {0} listening on port {1}!'
@@ -147,7 +145,7 @@ def kill_process(pid, logging=False):
     try:
         _log(logging, 'Killing process {0}!'.format(pid))
         os.kill(int(pid), signal.SIGKILL)
-        return 
+        return
     except OSError:
         # If killed
         return False
@@ -158,6 +156,7 @@ def _get_total_seconds(td):
     Fixes the missing :meth:`datetime.timedelta.total_seconds()`
     method in Python 2.6
     """
+    # pylint: disable=invalid-name
 
     return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) \
         / 10 ** 6
@@ -166,16 +165,16 @@ def _get_total_seconds(td):
 class Base(object):
     """
     Base class for all frameworks.
-    
+
     :param str path:
         Absolute path to app directory or module (depends on framework).
-        
+
     :param str host:
         A host at which the live server should listen.
-        
+
     :param float timeout:
         Timeout in seconds for the check.
-    
+
     :param str check_url:
         URL where to check whether the server is running.
         Default is ``"http://{host}:{port}"``.
@@ -188,11 +187,11 @@ class Base(object):
     """
 
     _argument_parser = argparse.ArgumentParser()
-    
+
     def __init__(self, path, host='127.0.0.1', port=8001, timeout=10.0,
                  check_url=None, executable='python', logging=False,
                  suppress_output=True, **kwargs):
-        
+
         self.path = path
         self.timeout = timeout
         self.host = host
@@ -205,6 +204,9 @@ class Base(object):
         self.scheme = 'http'
         if check_url:
             self.check_url = self._normalize_check_url(check_url)
+
+    def create_command(self):
+        pass
 
     @property
     def default_url(self):
@@ -245,7 +247,7 @@ class Base(object):
 
         response = None
         sleeped = 0.0
-        t = datetime.now()
+        now = datetime.now()
 
         while not response:
             try:
@@ -263,9 +265,9 @@ class Base(object):
                         )
                     )
                 time.sleep(1)
-                sleeped = _get_total_seconds(datetime.now() - t)
+                sleeped = _get_total_seconds(datetime.now() - now)
 
-        return _get_total_seconds(datetime.now() - t)
+        return _get_total_seconds(datetime.now() - now)
 
     def live(self, kill_port=False, check_url=None):
         """
@@ -280,7 +282,7 @@ class Base(object):
             URL where to check whether the server is running.
             Default is ``"http://{self.host}:{self.port}"``.
         """
-        
+
         pid = port_in_use(self.port, kill_port)
 
         if pid:
@@ -320,8 +322,8 @@ class Base(object):
         if self.process:
             _log(self.logging,
                  'Stopping {0} server with PID: {1} running at {2}.'
-                     .format(self.__class__.__name__, self.process.pid,
-                             self.check_url))
+                 .format(self.__class__.__name__, self.process.pid,
+                         self.check_url))
 
             self._kill()
 
@@ -361,7 +363,7 @@ class Base(object):
 
 class WrapperBase(Base):
     """Base class for frameworks that require their app to be wrapped."""
-    
+
     def create_command(self):
         return [
             self.executable,
@@ -411,7 +413,7 @@ class Flask(WrapperBase):
     def wrap(cls, app):
         """
         Adds test live server capability to a Flask app module.
-        
+
         :param app:
             A :class:`flask.Flask` app instance.
         """
@@ -423,7 +425,7 @@ class Flask(WrapperBase):
         if host:
             if ssl:
                 try:
-                    import OpenSSL
+                    import OpenSSL  # pylint: disable=unused-variable
                 except ImportError:
                     # OSX fix
                     sys.path.append(
@@ -433,7 +435,7 @@ class Flask(WrapperBase):
                     )
 
                 try:
-                    import OpenSSL
+                    import OpenSSL  # pylint: disable=unused-variable
                 except ImportError:
                     # Linux fix
                     sys.path.append(
@@ -442,7 +444,7 @@ class Flask(WrapperBase):
                     )
 
                 try:
-                    import OpenSSL
+                    import OpenSSL  # pylint: disable=unused-variable
                 except ImportError:
                     raise LiveAndLetDieError(
                         'Flask app could not be launched because the pyopenssl '
@@ -452,7 +454,7 @@ class Flask(WrapperBase):
 
             app.run(host=host, port=port, ssl_context=ssl_context)
             sys.exit()
-    
+
 
 class GAE(Base):
     def __init__(self, dev_appserver_path, *args, **kwargs):
@@ -464,7 +466,7 @@ class GAE(Base):
         super(GAE, self).__init__(*args, **kwargs)
         self.dev_appserver_path = dev_appserver_path
         self.admin_port = kwargs.get('admin_port', 5555)
-    
+
     def create_command(self):
         command = [
             self.dev_appserver_path,
@@ -484,14 +486,14 @@ class WsgirefSimpleServer(WrapperBase):
     @classmethod
     def wrap(cls, app):
         host, port = cls.parse_args()
-        if host:            
+        if host:
             from wsgiref.simple_server import make_server
-            
-            s = make_server(host, port, app)
-            s.serve_forever()
-            s.server_close()
+
+            server = make_server(host, port, app)
+            server.serve_forever()
+            server.server_close()
             sys.exit()
-    
+
 
 class Django(Base):
     def create_command(self):

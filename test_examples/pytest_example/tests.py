@@ -48,14 +48,14 @@ if sys.version_info[0] is 2 and sys.version_info[1] is 7:
 def app(request):
     app = APPS[request.param]
     app.name = request.param
-    
+
     try:
         # Run the live server.
         app.live(kill_port=True)
     except Exception as e:
         # Skip test if not started.
         pytest.fail(e.message)
-    
+
     request.addfinalizer(lambda: app.die())
     return app
 

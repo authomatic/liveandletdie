@@ -26,11 +26,11 @@ def test_decorator(cls):
         except Exception as e:
             # Skip test if not started.
             raise unittest.SkipTest(e)
-    
+
     @classmethod
     def tearDownClass(cls):
         cls.app.die()
-    
+
     def test_visit_start_page(self):
         page_text = requests.get(self.app.check_url, verify=False).\
             content.decode('utf-8')
