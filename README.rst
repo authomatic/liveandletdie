@@ -51,12 +51,6 @@ If you set the ``ssl`` keyword argument to ``True``, the app will be run with
 ``ssl_context="adhoc"`` and the schema of the ``self.check_url``
 will be ``"https"``.
 
-.. warning::
-
-    The Flask with ssl_context **doesn't work in Python 3** because
-    Werkzeug still uses ``sys.maxint`` which is not supported in Python 3
-    (see https://github.com/mitsuhiko/werkzeug/issues/)
-
 .. note::
 
     If you are struggling with installation of
