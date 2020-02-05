@@ -63,6 +63,13 @@ class TestPyramid(unittest.TestCase):
 
 
 @test_decorator
+class TestPyramidSSL(unittest.TestCase):
+    EXPECTED_TEXT = 'Home Pyramid SSL'
+    app = liveandletdie.WsgirefSimpleServer(abspath('sample_apps/pyramid/main.py'), port=PORT,
+                                            ssl=True)
+
+
+@test_decorator
 class TestDjango(unittest.TestCase):
     EXPECTED_TEXT = 'Home Django'
     app = liveandletdie.Django(abspath('sample_apps/django/example'), port=PORT)
