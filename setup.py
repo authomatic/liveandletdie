@@ -10,7 +10,7 @@ setup(
     name=NAME,
     version='0.0.6',
     packages=find_packages(),
-    install_requires=['requests'],
+    install_requires=['requests', 'werkzeug'],
     package_data={'': ['*.txt', '*.rst']},
     author='Peter Hudec',
     author_email='peterhudec@peterhudec.com',
