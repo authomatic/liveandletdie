@@ -13,5 +13,5 @@ deploy:
     distributions: "sdist bdist_wheel"
     on:
       tags: true
-      repo: authomaticliveandletdie
+      repo: authomatic/liveandletdie
 
