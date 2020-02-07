@@ -21,6 +21,11 @@ APPS = {
         abspath('sample_apps/pyramid/main.py'),
         port=PORT
     ),
+    'Pyramid SSL': liveandletdie.WsgirefSimpleServer(
+        abspath('sample_apps/pyramid/main.py'),
+        port=PORT,
+        ssl=True
+    ),
     'Flask': liveandletdie.Flask(
         abspath('sample_apps/flask/main.py'),
         port=PORT

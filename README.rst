@@ -106,6 +106,10 @@ Pyramid (wsgiref.simple_server)
 By ``wsgiref.simple_server`` you must wrap the **WSGI application** in
 ``liveandletdie.WsgirefSimpleServer.wrap(app)``.
 
+If you set the ``ssl`` keyword argument to ``True``, the app will be run with
+a self-signed certificate, and the schema of the ``self.check_url``
+will be ``"https"``.
+
 .. code-block:: python
 
     # pyramid/app/main.py

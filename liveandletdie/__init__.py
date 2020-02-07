@@ -4,9 +4,12 @@ from datetime import datetime
 import os
 import re
 import signal
+import ssl
 import subprocess
 import sys
+import tempfile
 import time
+from werkzeug.serving import make_ssl_devcert
 # pylint: disable=wrong-import-order
 try:
     from urllib.parse import urlsplit, splitport
@@ -419,11 +422,10 @@ class Flask(WrapperBase):
         """
 
         host, port = cls.parse_args()
-        ssl = cls._argument_parser.parse_args().ssl
         ssl_context = None
 
         if host:
-            if ssl:
+            if cls._argument_parser.parse_args().ssl:
                 try:
                     import OpenSSL  # pylint: disable=unused-variable
                 except ImportError:
@@ -483,6 +485,41 @@ class GAE(Base):
 
 
 class WsgirefSimpleServer(WrapperBase):
+    def __init__(self, *args, **kwargs):
+        """
+        :param bool ssl:
+            If true, the app will be run with ssl enabled and the
+            scheme of the ``self.check_url`` will be ``"https"``.
+        """
+        self.ssl = kwargs.pop('ssl', None)
+        super(WsgirefSimpleServer, self).__init__(*args, **kwargs)
+        if self.ssl:
+            self.scheme = 'https'
+
+    def create_command(self):
+        command = super(WsgirefSimpleServer, self).create_command()
+        if self.ssl is True:
+            command += ['--ssl=1']
+        return command
+
+    def check(self, check_url=None):
+        url = self.check_url if check_url is None else \
+            self._normalize_check_url(check_url)
+
+        if self.ssl:
+            url = url.replace('http://', 'https://')
+
+        super(WsgirefSimpleServer, self).check(url)
+
+    @classmethod
+    def _add_args(cls):
+        super(WsgirefSimpleServer, cls)._add_args()
+        cls._argument_parser.add_argument('--ssl',
+                                          help='Run with ssl enabled.',
+                                          type=bool,
+                                          nargs='?',
+                                          default=False)
+
     @classmethod
     def wrap(cls, app):
         host, port = cls.parse_args()
@@ -490,6 +527,24 @@ class WsgirefSimpleServer(WrapperBase):
             from wsgiref.simple_server import make_server
 
             server = make_server(host, port, app)
+            if cls._argument_parser.parse_args().ssl:
+                # Set HTTPS='1' makes wsgiref set wsgi.url_scheme='https'
+                # This in turn makes pyramid set request.scheme='https'
+                server.base_environ['HTTPS'] = '1'
+
+                with tempfile.TemporaryDirectory() as td:
+                    # Generate temporary self-signed cert/key pair
+                    # using the library used by Flask for 'adhoc' ssl_context
+                    certpath = '{}/liveandletdie'.format(td)
+                    make_ssl_devcert(certpath)
+
+                    server.socket = ssl.wrap_socket(
+                        server.socket,
+                        server_side=True,
+                        certfile='{}.crt'.format(certpath),
+                        keyfile='{}.key'.format(certpath),
+                    )
+
             server.serve_forever()
             server.server_close()
             sys.exit()

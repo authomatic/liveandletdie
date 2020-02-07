@@ -86,3 +86,7 @@ class SSLBase(Base):
 class TestFlask(SSLBase):
     app_path = os.path.join(SAMPLE_APPS_DIR, 'flask', 'main.py')
     class_ = liveandletdie.Flask
+
+class TestPyramid(SSLBase):
+    app_path = os.path.join(SAMPLE_APPS_DIR, 'pyramid', 'main.py')
+    class_ = liveandletdie.Pyramid

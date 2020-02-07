@@ -5,7 +5,11 @@ from pyramid.response import Response
 
 
 def home(request):
-    return Response('Home Pyramid')
+    content = 'Home Pyramid'
+    if request.scheme == 'https':
+        content += ' SSL'
+
+    return Response(content)
 
 
 if __name__ == '__main__':
