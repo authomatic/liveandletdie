@@ -8,12 +8,14 @@ HERE = os.path.dirname(__file__)
 
 setup(
     name=NAME,
-    version='0.0.6',
+    version='0.0.7',
     packages=find_packages(),
     install_requires=['requests', 'werkzeug'],
     package_data={'': ['*.txt', '*.rst']},
     author='Peter Hudec',
     author_email='peterhudec@peterhudec.com',
+    maintainer='Authomatic Project Community',
+    maintainer_email='authomaticproject@protonmail.com',
     description='Simplifies launching and terminating of web development '
         'servers from BDD and functional tests.',
     long_description=open(os.path.join(HERE, 'README.rst')).read(),
