@@ -558,3 +558,18 @@ class Django(Base):
             'runserver',
             '{0}:{1}'.format(self.host, self.port),
         ]
+
+
+class FastAPIServer(Base):
+    def __init__(self, *args, **kwargs):
+        kwargs['executable'] = 'uvicorn'
+        super().__init__(*args, **kwargs)
+
+    def create_command(self):
+        return [
+            self.executable,
+            '{}:app'.format(self.path),
+            '--host {}'.format(self.host),
+            '--port {}'.format(self.port),
+            '--reload',
+        ]
