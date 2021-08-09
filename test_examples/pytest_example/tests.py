@@ -48,8 +48,8 @@ if sys.version_info[0] is 2 and sys.version_info[1] is 7:
         abspath('sample_apps/gae'),
         port=PORT)
 
-
-@pytest.fixture('module', APPS)
+# Create an app instance for each app in APPS
+@pytest.fixture(scope='module', params=APPS.keys())
 def app(request):
     app = APPS[request.param]
     app.name = request.param
