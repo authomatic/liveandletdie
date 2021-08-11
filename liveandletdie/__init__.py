@@ -566,9 +566,11 @@ class FastAPIServer(Base):
         super().__init__(*args, **kwargs)
 
     def create_command(self):
+        path_without_extension = self.path.rsplit('.')[0]
+
         return [
             self.executable,
-            '{}:app'.format(self.path),
+            '{}:app'.format(path_without_extension),
             '--host {}'.format(self.host),
             '--port {}'.format(self.port),
             '--reload',
