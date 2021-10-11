@@ -86,7 +86,10 @@ class TestGAE(unittest.TestCase):
 @test_decorator
 class TestFastAPI(unittest.TestCase):
     EXPECTED_TEXT = 'Home FastAPI'
-    app = liveandletdie.FastAPIServer(abspath('sample_apps/fastapi/main.py'), port=PORT)
+    app = liveandletdie.FastAPIServer(
+        abspath('sample_apps/fastapi/main.py'),
+        port=PORT
+    )
 
 
 if __name__ == '__main__':
