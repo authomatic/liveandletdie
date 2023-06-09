@@ -8,7 +8,7 @@ HERE = os.path.dirname(__file__)
 
 setup(
     name=NAME,
-    version='0.0.9',
+    version='0.0.10.dev0',
     packages=find_packages(),
     install_requires=['requests', 'werkzeug'],
     package_data={'': ['*.txt', '*.rst']},
