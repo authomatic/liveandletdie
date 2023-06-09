@@ -7,7 +7,7 @@ app = FastAPI()
 @app.get('/')
 def home(request: Request):
     content = 'Home FastAPI'
-    if request.url.startswith('https://'):
+    if request.url.scheme == 'https':
         content += ' SSL'
 
     return content
