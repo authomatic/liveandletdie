@@ -1,3 +1,25 @@
+Version 0.0.9
+-------------
+
+* Fixed Django deprecation
+* Fixed FastAPI code
+* Fixed tests
+* removed support for Python 3.6
+* added support for Python 3.7 to 3.11
+
+
+Version 0.0.8
+-------------
+
+* changes undocumented
+
+
+Version 0.0.8
+-------------
+
+* changes undocumented
+
+
 Version 0.0.6
 -------------
 
