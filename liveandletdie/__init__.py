@@ -573,7 +573,7 @@ class FastAPIServer(Base):
             '--host',
             self.host,
             '--port',
-            self.port,
+            str(self.port),
             'main:app',
             '--reload',
         ]
