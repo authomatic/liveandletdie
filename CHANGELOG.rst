@@ -1,5 +1,5 @@
-Version 0.0.9
--------------
+Version 0.0.9 (unreleased)
+--------------------------
 
 * Fixed Django deprecation
 * Fixed FastAPI code
