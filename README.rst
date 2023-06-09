@@ -1,8 +1,9 @@
 ================
 Live and Let Die
 ================
-.. image:: https://travis-ci.org/peterhudec/liveandletdie.svg?branch=master
-    :target: https://travis-ci.org/peterhudec/liveandletdie
+
+.. image:: https://github.com/authomatic/liveandletdie/actions/workflows/main.yml/badge.svg
+    :target: https://github.com/authomatic/liveandletdie/actions/
 
 **Live and Let Die** simplifies launching and terminating of web development
 servers from **BDD** or **functional** tests. I have created it for functional
@@ -195,20 +196,20 @@ Developers
 Clone:
 
 ::
-    
+
     $ git clone https://github.com/peterhudec/liveandletdie.git
 
 Bootstrap the development environment.
 This will create the ``./venv`` virtual environment in the project root.
 
 ::
-    
+
     $ sh bootstrap.sh
 
 Run tests:
 
 ::
-    
+
     $ sh run-all.sh
 
 Or bootstrap and run tests in one step:
