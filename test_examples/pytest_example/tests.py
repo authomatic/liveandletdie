@@ -39,6 +39,10 @@ APPS = {
         abspath('sample_apps/django/example'),
         port=PORT
     ),
+    'FastAPI': liveandletdie.FastAPIServer(
+        abspath('sample_apps/fastapi/main.py'),
+        port=PORT
+    ),
 }
 
 

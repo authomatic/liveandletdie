@@ -83,6 +83,14 @@ class TestGAE(unittest.TestCase):
     app = liveandletdie.GAE(environ['VIRTUAL_ENV'] + '/bin/dev_appserver',
                   abspath('sample_apps/gae'), port=PORT)
 
+@test_decorator
+class TestFastAPI(unittest.TestCase):
+    EXPECTED_TEXT = 'Home FastAPI'
+    app = liveandletdie.FastAPIServer(
+        abspath('sample_apps/fastapi/main.py'),
+        port=PORT
+    )
+
 
 if __name__ == '__main__':
     unittest.main()

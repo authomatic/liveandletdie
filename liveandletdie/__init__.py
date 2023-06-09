@@ -568,8 +568,13 @@ class FastAPIServer(Base):
     def create_command(self):
         return [
             self.executable,
-            '{}:app'.format(self.path),
-            '--host {}'.format(self.host),
-            '--port {}'.format(self.port),
+            '--app-dir',
+            os.path.dirname(self.path),
+            '--host',
+            self.host,
+            '--port',
+            str(self.port),
+            'main:app',
             '--reload',
         ]
+
