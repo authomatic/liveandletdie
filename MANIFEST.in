@@ -1,3 +1,10 @@
+include *.sh
+include tox.ini
+recursive-include bootstrap *.py
+recursive-include sample_apps *.py
+recursive-include sample_apps *.yaml
+recursive-include test_examples *.feature
+recursive-include test_examples *.py
 include *.txt *.rst
 prune venv
 prune tests
